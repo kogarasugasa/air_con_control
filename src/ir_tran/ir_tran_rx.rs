@@ -20,7 +20,7 @@ pub fn receive_pattern(pin: Pin) -> Vec<Signal> {
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_millis(10));
+        thread::sleep(time::Duration::from_millis(1));
     }
     pattern
 }
