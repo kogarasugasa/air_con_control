@@ -4,9 +4,10 @@ use crate::model::Signal;
 
 pub fn receive_pattern(pin: Pin) -> Vec<Signal> {
     let mut pattern = vec![];
+    let init_val = pin.read();
     while true {
         let val = pin.read();
-        if val == gpio::Level::High {
+        if val != init_val {
             break;
         }
         thread::sleep(time::Duration::from_millis(1));
@@ -19,7 +20,7 @@ pub fn receive_pattern(pin: Pin) -> Vec<Signal> {
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_millis(1));
+        thread::sleep(time::Duration::from_millis(10));
     }
     pattern
 }
