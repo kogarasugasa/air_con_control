@@ -5,7 +5,7 @@ use std::str::FromStr;
 use rppal::gpio::{ self, Pin, Level };
 use serde::{Deserialize, Serialize};
 use serde_json::{Serializer, Deserializer};
-use serde::{Serialize, Deserialize};
+//use serde::{Serialize, Deserialize};
 
 
 fn main() {
@@ -17,13 +17,13 @@ fn main() {
     let mut args = std::env::args();
     let mut operation_input = String::new();
     if let Some(arg) = args.next() {
-        match OperationType.parse(arg) {
+        let input = match OperationType.parse(arg) {
             Ok(ope) => ope,
             Err(e) => {
                 eprintln!("{}", e);
                 return;
             }
-        }
+        };
         operation_input = input;
     }
     let profile_name = args.next();
@@ -83,9 +83,9 @@ fn get_profiles(path: &str) -> io::Result<Vec<String>> {
             Some(v) => v,
             None => continue
         };
-        let name = item.file_name().to_string_lossy();
+        let name = item.file_name().to_string_lossy().into_owned();
         if item_type.is_file() {
-            profiles.push(name.into_owned());
+            profiles.push(name);
         }
     }
     Ok(profiles)
@@ -280,32 +280,26 @@ impl Deserialize for gpio::Level {
         D: serde::Deserializer<'de>
     {
         let s = String::deserialize(deserializer)?;
-        gpio::Level::from_str(&s).map_err(serde::de::Error::custom)
+        let wrapper = LevelStr::from_str(&s);
+        match wrapper {
+            Ok(v) => Ok(v.0),
+            Err(e) => Err(serde::de::Error::custom(e.to_string()))
+        }
     }
 }
-impl FromStr for gpio::Level {
+impl FromStr for LevelStr {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "High" => Ok(gpio::Level::High),
-            "Low" => Ok(gpio::Level::Low),
+            "High" => Ok(LevelStr(gpio::Level::High)),
+            "Low" => Ok(LevelStr(gpio::Level::Low)),
             _ => Err("Expected High or Low"),
         }
     }
-    // type Err = &'static str;
-    // fn from_str(s: &str) -> Result<Self, Self::Err> {
-    //     if s == "High" {
-    //         Ok(gpio::High)
-    //     }
-    //     else if s == "Low" {
-    //         Ok(gpio::Low)
-    //     }
-    //     else {
-    //         Err("Expected High or Low")
-    //     }
-    // }
 }
+struct LevelStr(gpio::Level);
+
 
 #[derive(Serialize, Deserialize)]
 pub struct SignalPattern {
