@@ -31,12 +31,12 @@ pub fn receive_pattern(pin: Pin) -> Vec<Signal> {
     for i in 1..pattern.len() {
         let signal = &pattern[i];
         let span = signal.elapsed - before_signal.elapsed;
-        if (span.as_millis() >= 1000) {
+        if span.as_millis() >= 1000 {
             break;
         }
         if before_signal.level != signal.level {
             before_signal = signal;
-            compress.push(signlal);
+            compress.push(signal.clone());
         }
     }
     compress
