@@ -122,8 +122,8 @@ fn store_pattern_file(root: &str, name: &str) {
         name: name.to_string(),
         signals: receive_pattern(pin),
     };
-    let path = pattern.name + ".json";
-    let is_exists = match fs::exists(path) {
+    let path = pattern.name.clone() + ".json";
+    let is_exists = match fs::exists(&path) {
         Ok(exists) => exists,
         Err(e) =>  false
     };
@@ -146,7 +146,7 @@ fn read_pattern_from_file(file_path: &str) -> Result<SignalPattern, String> {
         Ok(v) => v,
         Err(e) => return Err(e.to_string())
     };
-    let mut json;
+    let mut json = Default::default();
     if let Err(e) = file.read_to_string(&mut json) {
         return Err(e.to_string());
     }
@@ -169,9 +169,9 @@ fn save_pattern_to_file(pattern: &SignalPattern, file_path: &str) -> Result<(), 
 }
 
 fn send_pattern(pin: Pin, pattern: SignalPattern) {
-    let out_pin = pin.into_output();
+    let mut out_pin = pin.into_output();
     for i in 0..pattern.signals.len() {
-        let signal = pattern.signals[i];
+        let signal = &pattern.signals[i];
         let before = match pattern.signals.get(i -1) {
             Some(pat) => pat.elapsed,
             None => time::Duration::ZERO
@@ -248,8 +248,17 @@ impl OperationType {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Signal {
+    // #[serde(with = "Level_as_string")]
     pub level: gpio::Level,
     pub elapsed: time::Duration,
+}
+impl Serialize for gpio::Level {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -263,3 +272,4 @@ impl SignalPattern {
         self.signals.iter().map(|sig| sig.elapsed).sum()
     }
 }
+
