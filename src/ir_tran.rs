@@ -1,7 +1,5 @@
 mod ir_tran_rx;
-use ir_tran_rx::ir_tran_rs::receive_pattern;
-
-
+use ir_tran_rx::receive_pattern;
 
 pub fn main() {
     let pin = match gpio::Gpio::new() {
