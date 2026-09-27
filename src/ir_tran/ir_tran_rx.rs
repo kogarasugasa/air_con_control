@@ -1,3 +1,5 @@
+use rppal::gpio;
+
 pub mod ir_tran_rs {
     pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
         let mut pattern = vec![];
