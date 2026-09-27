@@ -1,9 +1,11 @@
 use std::io::{self, Read, Write};
 use std::os::windows::fs::OpenOptionsExt;
 use std::{fs, thread, time};
+use std::str::FromStr;
 use rppal::gpio::{ self, Pin, Level };
 use serde::{Deserialize, Serialize};
 use serde_json::{Serializer, Deserializer};
+
 
 fn main() {
     println!("Hello, world!");
@@ -259,6 +261,38 @@ impl Serialize for gpio::Level {
     {
         serializer.serialize_str(&self.to_string())
     }
+}
+impl Deserialize for gpio::Level {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        gpio::Level::from_str(&s).map_err(serde::de::Error::custom)
+    }
+}
+impl FromStr for gpio::Level {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "High" => Ok(gpio::Level::High),
+            "Low" => Ok(gpio::Level::Low),
+            _ => Err("Expected High or Low"),
+        }
+    }
+    // type Err = &'static str;
+    // fn from_str(s: &str) -> Result<Self, Self::Err> {
+    //     if s == "High" {
+    //         Ok(gpio::High)
+    //     }
+    //     else if s == "Low" {
+    //         Ok(gpio::Low)
+    //     }
+    //     else {
+    //         Err("Expected High or Low")
+    //     }
+    // }
 }
 
 #[derive(Serialize, Deserialize)]
