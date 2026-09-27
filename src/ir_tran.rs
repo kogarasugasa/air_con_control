@@ -1,10 +1,12 @@
 mod ir_tran_rx;
 use ir_tran_rx::receive_pattern;
-use std::{str::pattern::Pattern, time};
+use std::io;
+use std::{time};
 use rppal::gpio;
 use crate::model::Signal;
 use crate::model::SignalPattern;
 use std::fs;
+use std::io::Write;
 
 pub fn main() {
     let pin = match gpio::Gpio::new() {
