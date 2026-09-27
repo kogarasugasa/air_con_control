@@ -1,2 +1,2 @@
-mod signal1;
-pub use signal1::Signal;
+mod signal;
+pub use signal::Signal;
