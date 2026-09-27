@@ -26,9 +26,15 @@ pub fn main() {
         signals: receive_pattern(pin),
     };
     let path = "signal_pattern.txt";
-    match fs::remove_file(&path) {
-        Ok(_) => println!("Previous pattern file removed"),
-        Err(e) => eprintln!("Failed to remove previous pattern file: {}", e),
+    let is_exists = match fs::exists(path) {
+        Ok(exists) => exists,
+        Err(e) =>  false
+    };
+    if is_exists {
+        match fs::remove_file(&path) {
+            Ok(_) => println!("Previous pattern file removed"),
+            Err(e) => eprintln!("Failed to remove previous pattern file: {}", e),
+        }
     }
     match save_pattern_to_file(&pattern, path) {
         Ok(_) => println!("Pattern saved to signal_pattern.txt"),
@@ -39,7 +45,7 @@ fn save_pattern_to_file(pattern: &SignalPattern, file_path: &str) -> std::io::Re
     let mut file = fs::File::create(file_path)?;
     writeln!(file, "Pattern Name: {}", pattern.name)?;
     for signal in &pattern.signals {
-        writeln!(file, "Signal: {:?}, Elapsed: {:?}", signal.value, signal.elapsed)?;
+        writeln!(&mut file, "Signal: {:?}, Elapsed: {:?}", signal.value, signal.elapsed)?;
     }
     Ok(())
 }
