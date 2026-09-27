@@ -21,18 +21,16 @@ pub fn main() {
             return;
         }
     };
-    let pattern = receive_pattern(pin);
-    for signal in pattern {
-        println!(
-            "Signal: {:?}, Elapsed: {:?}",
-            signal.value, signal.elapsed
-        );
-    }
     let pattern = SignalPattern {
         name: String::from("Example Pattern"),
-        signals: pattern,
+        signals: receive_pattern(pin),
     };
-    match save_pattern_to_file(&pattern, "signal_pattern.txt") {
+    let path = "signal_pattern.txt";
+    match fs::remove_file(&path) {
+        Ok(_) => println!("Previous pattern file removed"),
+        Err(e) => eprintln!("Failed to remove previous pattern file: {}", e),
+    }
+    match save_pattern_to_file(&pattern, path) {
         Ok(_) => println!("Pattern saved to signal_pattern.txt"),
         Err(e) => eprintln!("Failed to save pattern: {}", e),
     }
