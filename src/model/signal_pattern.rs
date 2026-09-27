@@ -1,8 +1,8 @@
-use crate::model::signal;
+use crate::model::Signal;
 
 pub struct SignalPattern {
     pub name: String,
-    pub signals: Vec<signal>,
+    pub signals: Vec<Signal>,
 }
 
 impl SignalPattern {
