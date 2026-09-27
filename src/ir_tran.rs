@@ -1,9 +1,7 @@
 mod ir_tran_rx;
-
 use ir_tran_rx::ir_tran_rs::receive_pattern;
-use rppal::gpio;
-use std::thread::JoinHandle;
-use std::{thread, time};
+
+
 
 pub fn main() {
     let pin = match gpio::Gpio::new() {

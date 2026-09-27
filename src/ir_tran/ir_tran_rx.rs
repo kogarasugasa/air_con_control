@@ -1,4 +1,5 @@
-use rppal::gpio;
+use rppal::gpio::{ self, Pin, Level };
+use std::{thread, time};
 
 pub mod ir_tran_rs {
     pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
