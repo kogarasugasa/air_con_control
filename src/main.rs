@@ -5,6 +5,7 @@ use std::str::FromStr;
 use rppal::gpio::{ self, Pin, Level };
 use serde::{Deserialize, Serialize};
 use serde_json::{Serializer, Deserializer};
+use serde::{Serialize, Deserialize};
 
 
 fn main() {
@@ -62,7 +63,7 @@ fn main() {
                 None => return
             };
             let profile = profiles.iter()
-                .find(|profile| profile == profile_name)
+                .find(|profile| **profile == profile_name)
             ;
             if let Some(profile) = profile {
                 send_pattern_file(&profile_path, &profile_name);
@@ -74,9 +75,17 @@ fn get_profiles(path: &str) -> io::Result<Vec<String>> {
     let items = fs::read_dir(path)?;
     let mut profiles = vec![];
     for item in items {
-        let item = item.ok()?;
-        if item.file_type().ok()?.is_file() {
-            profiles.push(item.file_name().to_string_lossy().into_owned());
+        let item = match item.ok() {
+            Some(v) => v,
+            None => continue
+        };
+        let item_type = match item.file_type().ok() {
+            Some(v) => v,
+            None => continue
+        };
+        let name = item.file_name().to_string_lossy();
+        if item_type.is_file() {
+            profiles.push(name.into_owned());
         }
     }
     Ok(profiles)
@@ -159,7 +168,10 @@ fn read_pattern_from_file(file_path: &str) -> Result<SignalPattern, String> {
     Ok(pattern)
 }
 fn save_pattern_to_file(pattern: &SignalPattern, file_path: &str) -> Result<(), String> {
-    let mut file = fs::File::create(file_path)?;
+    let mut file = match fs::File::create(file_path) {
+        Ok(v) => v,
+        Err(e) => return Err(e.to_string())
+    };
     let json = match serde_json::to_string(&pattern) {
         Ok(json) => json,
         Err(e) => return Err(e.to_string())
