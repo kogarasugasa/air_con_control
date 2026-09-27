@@ -1,4 +1,5 @@
 use crate::model::signal;
+
 pub struct SignalPattern {
     pub name: String,
     pub signals: Vec<signal>,
