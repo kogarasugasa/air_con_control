@@ -1,5 +1,7 @@
 mod ir_tran_rx;
 use ir_tran_rx::receive_pattern;
+use std::time;
+use super::Signal;
 
 pub fn main() {
     let pin = match gpio::Gpio::new() {
