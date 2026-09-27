@@ -1,5 +1,6 @@
 use rppal::gpio::{ self, Pin, Level };
 use std::{thread, time};
+use super::model::Signal;
 
 pub fn receive_pattern(pin: Pin) -> Vec<Signal> {
     let mut pattern = vec![];

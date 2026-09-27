@@ -1,4 +1,4 @@
 pub struct Signal {
-    value: gpio::Level,
-    elapsed: time::Duration,
+    pub value: gpio::Level,
+    pub elapsed: time::Duration,
 }
