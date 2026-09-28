@@ -1,4 +1,5 @@
 use std::env::Args;
+use std::fmt::Display;
 use std::io::{self, Read, Write};
 use std::{fs, thread, time};
 use rppal::gpio::{ self, Pin, Level };
@@ -16,7 +17,10 @@ fn main() {
     let start_option = StartOption { args };
 
     // 操作を取得
-    println!("please set operation {:?} or {:?}", OperationType::Receive, OperationType::Send);
+    println!("please set operation {} or {}",
+        OperationType::Receive,
+        OperationType::Send
+    );
     let operation = start_option.get_operation() // 引数から操作を取得する
         .or(get_operation_type_from_cli()) // 入力から操作を取得する
     ;
@@ -227,6 +231,15 @@ fn receive_pattern(pin: Pin) -> Vec<Signal> {
 enum OperationType {
     Send,
     Receive,
+}
+impl Display for OperationType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let disp = match self {
+            Self::Receive => "Receive",
+            Self::Send => "Send",
+        };
+        f.write_str(disp)
+    }
 }
 impl OperationType {
     fn to_string(&self) -> String {
