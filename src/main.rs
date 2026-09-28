@@ -16,7 +16,7 @@ fn main() {
     let start_option = StartOption { args };
 
     // 操作を取得
-    println!("please set operation {} or {}", OperationType::Receive, OperationType::Send);
+    println!("please set operation {:?} or {:?}", OperationType::Receive, OperationType::Send);
     let operation = start_option.get_operation() // 引数から操作を取得する
         .or(get_operation_type_from_cli()) // 入力から操作を取得する
     ;
