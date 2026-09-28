@@ -83,7 +83,7 @@ fn get_profiles(path: &str) -> io::Result<Vec<String>> {
         if !item_type.is_file() {
             continue;
         }
-        let mut name = format!("{}", item.file_name());
+        let mut name = format!("{}", item.file_name().to_string_lossy());
         let ext = ".json";
         if !name.to_lowercase().ends_with(ext) {
             continue;
