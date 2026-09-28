@@ -52,7 +52,10 @@ fn main() {
             };
             println!("find profile");
             let profile = profiles.iter()
-                .find(|profile| **profile == profile_name)
+                .find(|profile| {
+                    println!("**profile is {}, profile_name is {}", **profile, profile_name);
+                    return **profile == profile_name;
+                })
             ;
             println!("send pfofile");
             if let Some(profile) = profile {
