@@ -53,7 +53,10 @@ fn main() {
             println!("find profile");
             let profile = profiles.iter()
                 .find(|profile| {
-                    println!("**profile is {}, profile_name is {}", **profile, profile_name);
+                    println!("**profile is {}, profile_name is {}",
+                        **profile,
+                        profile_name
+                    );
                     return **profile == profile_name;
                 })
             ;
@@ -77,10 +80,16 @@ fn get_profiles(path: &str) -> io::Result<Vec<String>> {
             Some(v) => v,
             None => continue
         };
-        let name = item.file_name().to_string_lossy().into_owned();
-        if item_type.is_file() {
-            profiles.push(name);
+        if !item_type.is_file() {
+            continue;
         }
+        let mut name = format!("{}", item.file_name());
+        let ext = ".json";
+        if !name.to_lowercase().ends_with(ext) {
+            continue;
+        }
+        name.truncate(name.len() - ext.len());
+        profiles.push(name);
     }
     Ok(profiles)
 }
