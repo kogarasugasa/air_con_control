@@ -37,9 +37,12 @@ fn main() {
     };
     match operation {
         OperationType::Receive => {
+            println!("receive opetation");
             store_pattern_file(&profile_path, &profile_name);
+            println!("saved");
         },
         OperationType::Send => {
+            println!("send opetation");
             let profiles = match get_profiles(&profile_path) {
                 Ok(v) => v,
                 Err(e) => {
@@ -47,12 +50,15 @@ fn main() {
                     return;
                 }
             };
+            println!("find profile");
             let profile = profiles.iter()
                 .find(|profile| **profile == profile_name)
             ;
+            println!("send pfofile");
             if let Some(profile) = profile {
                 send_pattern_file(&profile_path, &profile);
             }
+            println!("sended");
         }
     }
 }
