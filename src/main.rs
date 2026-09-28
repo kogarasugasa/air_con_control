@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::io::{self, Read, Write};
 use std::{fs, thread, time};
 use rppal::gpio::{self, Pin};
@@ -290,7 +290,7 @@ impl From<gpio::Level> for PinLevel {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Signal {
     level: PinLevel,
     elapsed: time::Duration,
@@ -306,7 +306,6 @@ impl SignalPattern {
         self.signals.iter().map(|sig| sig.elapsed).sum()
     }
 }
-
 struct StartOption {
     args: Vec<String>,
 }
