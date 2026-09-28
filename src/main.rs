@@ -111,6 +111,7 @@ fn send_pattern_file(root: &str, name: &str) {
             return;
         },
     };
+    println!("{:?}", pattern);
     send_pattern(pin, pattern);
 }
 fn store_pattern_file(root: &str, name: &str) {
