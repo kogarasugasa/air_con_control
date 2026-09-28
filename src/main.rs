@@ -1,54 +1,37 @@
+use std::env::Args;
 use std::io::{self, Read, Write};
-use std::os::windows::fs::OpenOptionsExt;
 use std::{fs, thread, time};
-use std::str::FromStr;
 use rppal::gpio::{ self, Pin, Level };
 use serde::{Deserialize, Serialize};
-use serde_json::{Serializer, Deserializer};
-//use serde::{Serialize, Deserialize};
 
 
 fn main() {
     println!("Hello, world!");
-    let profile_path = std::env::current_dir()
-        .unwrap()
-        .to_string_lossy()
+    let profile_path = std::env::current_dir();
+    let profile_path = profile_path.unwrap();
+    let profile_path = profile_path.to_string_lossy();
+    let args: Vec<String> = std::env::args().into_iter()
+        .map(|v| v.to_lowercase())
+        .collect()
     ;
-    let mut args = std::env::args();
-    let mut operation_input = String::new();
-    if let Some(arg) = args.next() {
-        let input = match OperationType.parse(arg) {
-            Ok(ope) => ope,
-            Err(e) => {
-                eprintln!("{}", e);
-                return;
-            }
-        };
-        operation_input = input;
-    }
-    let profile_name = args.next();
-    if operation_input == "" {
-        if let Err(e) = io::stdin().read_line(&mut operation_input) {
-            eprintln!("{}", e);
-            return;
-        };
-    }
-    let operation = match OperationType::parse(&operation_input) {
-        Ok(ope) => ope,
-        Err(e) => {
-            eprintln!("{}", e);
-            return;
-        }
+    let start_option = StartOption { args };
+    let operation = start_option.get_operation() // 引数から操作を取得する
+        .or(get_operation_type_from_cli()) // 入力から操作を取得する
+    ;
+    let operation = match operation {
+        Some(v) => v,
+        None => return
     };
-    
+    let profile_name = start_option.get_profile_name() // 引数から操作を取得する
+        .or(get_profile_name_from_cli()) // 入力から操作を取得する
+    ;
+    let profile_name = match profile_name {
+        Some(v) => v,
+        None => return
+    };
     match operation {
         OperationType::Receive => {
-            let mut profile_name;
-            if let Err(e) = std::io::stdin().read_line(profile_name) {
-                eprintln!("{}", e);
-                return;
-            };
-            store_pattern_file(&profile_path, profile_name);
+            store_pattern_file(&profile_path, &profile_name);
         },
         OperationType::Send => {
             let profiles = match get_profiles(&profile_path) {
@@ -58,15 +41,11 @@ fn main() {
                     return;
                 }
             };
-            let profile_name = match profile_name {
-                Some(name) => name,
-                None => return
-            };
             let profile = profiles.iter()
                 .find(|profile| **profile == profile_name)
             ;
             if let Some(profile) = profile {
-                send_pattern_file(&profile_path, &profile_name);
+                send_pattern_file(&profile_path, &profile);
             }
         }
     }
@@ -192,10 +171,10 @@ fn send_pattern(pin: Pin, pattern: SignalPattern) {
         };
         thread::sleep(signal.elapsed - before);
         match signal.level {
-            Level::High => {
+            PinLevel::High => {
                 out_pin.set_high();
             },
-            Level::Low => {
+            PinLevel::Low => {
                 out_pin.set_low();
             }
         }
@@ -215,7 +194,7 @@ fn receive_pattern(pin: Pin) -> Vec<Signal> {
     let std_time = time::Instant::now();
     while receive_timer.is_finished() == false {
         let signal = Signal {
-            level: pin.read(),
+            level: pin.read().into(),
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
@@ -239,6 +218,7 @@ fn receive_pattern(pin: Pin) -> Vec<Signal> {
     }
     compress
 }
+#[derive(Debug, PartialEq, Eq)]
 enum OperationType {
     Send,
     Receive,
@@ -250,56 +230,34 @@ impl OperationType {
             OperationType::Send => "Send".to_string(),
         }
     }
-    fn parse(text: &str) -> Result<Self, &str> {
-        match text {
-            "Receive" => Ok(OperationType::Receive),
-            "Send" => Ok(OperationType::Send),
+    fn try_parse(text: &str) -> Result<Self, &str> {
+        match text.to_lowercase().as_str() {
+            "receive" => Ok(OperationType::Receive),
+            "send" => Ok(OperationType::Send),
             _ => return Err("Err"),
         }
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+enum PinLevel {
+    High,
+    Low
+}
+impl From<gpio::Level> for PinLevel {
+    fn from(value: gpio::Level) -> Self {
+        match value {
+            gpio::Level::High => Self::High,
+            gpio::Level::Low => Self::Low,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Signal {
-    // #[serde(with = "Level_as_string")]
-    pub level: gpio::Level,
+    pub level: PinLevel,
     pub elapsed: time::Duration,
 }
-impl Serialize for gpio::Level {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-impl Deserialize for gpio::Level {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>
-    {
-        let s = String::deserialize(deserializer)?;
-        let wrapper = LevelStr::from_str(&s);
-        match wrapper {
-            Ok(v) => Ok(v.0),
-            Err(e) => Err(serde::de::Error::custom(e.to_string()))
-        }
-    }
-}
-impl FromStr for LevelStr {
-    type Err = &'static str;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "High" => Ok(LevelStr(gpio::Level::High)),
-            "Low" => Ok(LevelStr(gpio::Level::Low)),
-            _ => Err("Expected High or Low"),
-        }
-    }
-}
-struct LevelStr(gpio::Level);
-
 
 #[derive(Serialize, Deserialize)]
 pub struct SignalPattern {
@@ -313,3 +271,43 @@ impl SignalPattern {
     }
 }
 
+struct StartOption {
+    args: Vec<String>,
+}
+impl StartOption {
+    fn get_operation(&self) -> Option<OperationType> {
+        let arg1 = match self.args.get(0) {
+            Some(v) => v.as_str(),
+            None => return None,
+        };
+        let operation = match OperationType::try_parse(arg1) {
+            Ok(v) => v,
+            Err(_) => return None,
+        };
+        Some(operation)
+    }
+    fn get_profile_name(&self) -> Option<String> {
+        match self.args.get(1) {
+            Some(v) => Some(v.to_string()),
+            None => None,
+        }
+    }
+}
+fn get_operation_type_from_cli() -> Option<OperationType> {
+    let mut input = String::new();
+    if let Err(_) = std::io::stdin().read_line(&mut input) {
+        return None;
+    };
+    let operation = match OperationType::try_parse(&input) {
+        Ok(v) => v,
+        Err(_) => return None
+    };
+    Some(operation)
+}
+fn get_profile_name_from_cli() -> Option<String> {
+    let mut input = String::new();
+    if let Err(_) = std::io::stdin().read_line(&mut input) {
+        return None;
+    }
+    Some(input)
+}
