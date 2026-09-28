@@ -206,9 +206,14 @@ fn send_pattern(pin: Pin, pattern: SignalPattern) {
     let mut out_pin = pin.into_output();
     for i in 0..pattern.signals.len() {
         let signal = &pattern.signals[i];
-        let before = match pattern.signals.get(i -1) {
-            Some(pat) => pat.elapsed,
-            None => time::Duration::ZERO
+        let before = if i == 0 {
+            time::Duration::ZERO
+        }
+        else {
+            match pattern.signals.get(i) {
+                Some(pat) => pat.elapsed,
+                None => time::Duration::ZERO
+            }
         };
         thread::sleep(signal.elapsed - before);
         match signal.level {
