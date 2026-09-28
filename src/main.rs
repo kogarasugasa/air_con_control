@@ -1,10 +1,8 @@
-use std::env::Args;
 use std::fmt::Display;
 use std::io::{self, Read, Write};
 use std::{fs, thread, time};
-use rppal::gpio::{ self, Pin, Level };
+use rppal::gpio::{self, Pin};
 use serde::{Deserialize, Serialize};
-
 
 fn main() {
     let profile_path = std::env::current_dir();
@@ -28,7 +26,6 @@ fn main() {
         Some(v) => v,
         None => return
     };
-
     // プロファイルを指定
     println!("please set profile name");
     let profile_name = start_option.get_profile_name() // 引数から操作を取得する
@@ -93,7 +90,15 @@ fn send_pattern_file(root: &str, name: &str) {
             return;
         }
     };
-    let pattern = match read_pattern_from_file(name) {
+    let path;
+    if root.ends_with("/") {
+        path = format!("{}{}.json", root, name);
+    }
+    else {
+        path = format!("{}/{}.json", root, name);
+    }
+    
+    let pattern = match read_pattern_from_file(&path) {
         Ok(v) => v,
         Err(e) => {
             eprintln!("{}", e);
@@ -121,7 +126,13 @@ fn store_pattern_file(root: &str, name: &str) {
         name: name.to_string(),
         signals: receive_pattern(pin),
     };
-    let path = pattern.name.clone() + ".json";
+    let path;
+    if root.ends_with("/") {
+        path = format!("{}{}.json", root, name);
+    }
+    else {
+        path = format!("{}/{}.json", root, name);
+    }
     let is_exists = match fs::exists(&path) {
         Ok(exists) => exists,
         Err(e) =>  false
@@ -249,6 +260,7 @@ impl OperationType {
         }
     }
     fn try_parse(text: &str) -> Result<Self, &str> {
+        let text = text.to_lowercase();
         match text.to_lowercase().as_str() {
             "receive" => Ok(OperationType::Receive),
             "send" => Ok(OperationType::Send),
@@ -273,18 +285,17 @@ impl From<gpio::Level> for PinLevel {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Signal {
-    pub level: PinLevel,
-    pub elapsed: time::Duration,
+    level: PinLevel,
+    elapsed: time::Duration,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SignalPattern {
-    pub name: String,
-    pub signals: Vec<Signal>,
+    name: String,
+    signals: Vec<Signal>,
 }
-
 impl SignalPattern {
-    pub fn duration(&self) -> std::time::Duration {
+    fn duration(&self) -> std::time::Duration {
         self.signals.iter().map(|sig| sig.elapsed).sum()
     }
 }
@@ -294,7 +305,7 @@ struct StartOption {
 }
 impl StartOption {
     fn get_operation(&self) -> Option<OperationType> {
-        let arg1 = match self.args.get(0) {
+        let arg1 = match self.args.get(1) {
             Some(v) => v.as_str(),
             None => return None,
         };
@@ -305,7 +316,7 @@ impl StartOption {
         Some(operation)
     }
     fn get_profile_name(&self) -> Option<String> {
-        match self.args.get(1) {
+        match self.args.get(2) {
             Some(v) => Some(v.to_string()),
             None => None,
         }
@@ -317,7 +328,7 @@ fn get_operation_type_from_cli() -> Option<OperationType> {
         println!("{}", e);
         return None;
     };
-    let operation = match OperationType::try_parse(&input) {
+    let operation = match OperationType::try_parse(input.trim()) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
@@ -331,5 +342,5 @@ fn get_profile_name_from_cli() -> Option<String> {
     if let Err(_) = std::io::stdin().read_line(&mut input) {
         return None;
     }
-    Some(input)
+    Some(input.trim().to_string())
 }
