@@ -189,6 +189,7 @@ fn save_pattern_to_file(pattern: &SignalPattern, file_path: &str) -> Result<(), 
 }
 
 fn send_pattern(pin: Pin, pattern: SignalPattern) {
+    println!("{:?}", pattern);
     let mut out_pin = pin.into_output();
     for i in 0..pattern.signals.len() {
         let signal = &pattern.signals[i];
