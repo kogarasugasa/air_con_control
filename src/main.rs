@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 
 
 fn main() {
-    println!("Hello, world!");
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
@@ -15,6 +14,9 @@ fn main() {
         .collect()
     ;
     let start_option = StartOption { args };
+
+    // 操作を取得
+    println!("please set operation {} or {}", OperationType::Receive, OperationType::Send);
     let operation = start_option.get_operation() // 引数から操作を取得する
         .or(get_operation_type_from_cli()) // 入力から操作を取得する
     ;
@@ -22,6 +24,9 @@ fn main() {
         Some(v) => v,
         None => return
     };
+
+    // プロファイルを指定
+    println!("please set profile name");
     let profile_name = start_option.get_profile_name() // 引数から操作を取得する
         .or(get_profile_name_from_cli()) // 入力から操作を取得する
     ;
@@ -295,12 +300,16 @@ impl StartOption {
 }
 fn get_operation_type_from_cli() -> Option<OperationType> {
     let mut input = String::new();
-    if let Err(_) = std::io::stdin().read_line(&mut input) {
+    if let Err(e) = std::io::stdin().read_line(&mut input) {
+        println!("{}", e);
         return None;
     };
     let operation = match OperationType::try_parse(&input) {
         Ok(v) => v,
-        Err(_) => return None
+        Err(e) => {
+            println!("{}", e);
+            return None;
+        }
     };
     Some(operation)
 }
