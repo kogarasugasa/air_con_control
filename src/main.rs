@@ -103,7 +103,7 @@ fn send_pattern_file(root: &str, name: &str) {
     else {
         path = format!("{}/{}.json", root, name);
     }
-    
+    println!("read pattern from file");
     let pattern = match read_pattern_from_file(&path) {
         Ok(v) => v,
         Err(e) => {
@@ -111,6 +111,7 @@ fn send_pattern_file(root: &str, name: &str) {
             return;
         },
     };
+    println!("road pattern from file");
     println!("{:?}", pattern);
     send_pattern(pin, pattern);
 }
@@ -189,7 +190,7 @@ fn save_pattern_to_file(pattern: &SignalPattern, file_path: &str) -> Result<(), 
 }
 
 fn send_pattern(pin: Pin, pattern: SignalPattern) {
-    println!("{:?}", pattern);
+    println!("{:?}", pattern); // ===================================================
     let mut out_pin = pin.into_output();
     for i in 0..pattern.signals.len() {
         let signal = &pattern.signals[i];
