@@ -296,7 +296,7 @@ pub struct Signal {
     elapsed: time::Duration,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SignalPattern {
     name: String,
     signals: Vec<Signal>,
