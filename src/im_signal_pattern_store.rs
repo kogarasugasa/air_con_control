@@ -6,6 +6,7 @@ impl SignalPattern {
     pub fn save(&self, file_path: &str) -> Result<(), String> {
         let file = fs::OpenOptions::new()
             .truncate(true)
+            .create(true)
             .write(true)
             .open(file_path);
         let mut file = match file {
