@@ -117,20 +117,20 @@ fn send_pattern(pin: Pin, pattern: SignalPattern) {
     }
 }
 fn receive_pattern(pin: Pin) -> Vec<Signal> {
-    let mut pattern = vec![];
+    let mut pattern = Vec::with_capacity(12000);
     let init_val = pin.read();
     while pin.read() == init_val {
         thread::sleep(time::Duration::from_millis(1));
     }
     let receive_timer = thread::spawn(move || thread::sleep(time::Duration::from_secs(5)));
     let std_time = time::Instant::now();
-    while receive_timer.is_finished() == false {
+    while !receive_timer.is_finished() {
         let signal = Signal {
             level: pin.read().into(),
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_millis(1));
+        thread::sleep(time::Duration::from_micros(500));
     }
     let mut before_signal = match pattern.first() {
         Some(v) => v,
