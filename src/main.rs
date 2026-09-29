@@ -11,6 +11,7 @@ mod fn_find_profile_names; use fn_find_profile_names::find_profile_names;
 
 fn main() {
     koba();
+    return;
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
