@@ -182,12 +182,18 @@ fn get_is_reverse_phase_from_cli() -> Option<bool> {
     Some(input.trim().to_lowercase().as_str() == "reverse")
 }
 fn koba() {
-    let i2c = rppal::i2c::I2c::new().unwrap();
+    let mut i2c = rppal::i2c::I2c::new().unwrap();
     let mut buf = [];
-    let disp_addr = 0x3e;
     let temp_addr = 0x76;
+    let disp_addr = 0x3e;
+    println!("0");
+    if let Err(e) = i2c.set_slave_address(temp_addr.clone()) {
+        println!("{}", e);
+    };
+    
     println!("1");
-    if let Err(e) = i2c.block_read(temp_addr, &mut buf) {
+    //if let Err(e) = i2c.block_read(temp_addr, &mut buf) {
+    if let Err(e) = i2c.read(&mut buf) {
         println!("{}", e);
     };
     println!("2");
@@ -199,7 +205,7 @@ fn koba() {
     if let Err(e) = i2c.block_read(disp_addr, &mut buf) {
         println!("{}", e);
     };
-    println!("1");
+    println!("4");
     match String::from_utf8(buf.to_vec()) {
         Ok(v) => println!("{}", v),
         Err(e) => eprintln!("{}", e),
