@@ -43,10 +43,11 @@ fn main() {
             println!("receive opetation");
             let pin = get_pin(4).unwrap();
             let path = create_profile_path(&profile_path, &profile_name);
-            let pattern = SignalPattern {
+            let mut pattern = SignalPattern {
                 name: profile_name,
                 signals: receive_pattern(pin),
             };
+            pattern.reverse_phase();
             pattern.save(&path).unwrap();
             println!("saved");
         },
