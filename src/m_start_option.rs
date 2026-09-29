@@ -1,9 +1,17 @@
+use std::env;
 use crate::m_operation_type::OperationType;
 
 pub struct StartOption {
     pub args: Vec<String>,
 }
 impl StartOption {
+    pub fn new(args: env::Args) -> Self {
+        let args: Vec<String> = args.into_iter()
+            .map(|v| v.to_lowercase())
+            .collect()
+        ;
+        Self { args }
+    }
     pub fn get_operation(&self) -> Option<OperationType> {
         let arg1 = match self.args.get(1) {
             Some(v) => v.as_str(),

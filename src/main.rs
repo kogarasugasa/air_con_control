@@ -13,11 +13,9 @@ fn main() {
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
-    let args: Vec<String> = std::env::args().into_iter()
-        .map(|v| v.to_lowercase())
-        .collect()
-    ;
-    let start_option = StartOption { args };
+    let start_option = StartOption::new(std::env::args());
+    println!("{:?}", start_option.get_operation());
+    println!("{:?}", start_option.get_profile_name());
 
     // 操作を取得
     println!("please set operation {} or {}",
@@ -87,7 +85,6 @@ fn create_profile_path(root: &str, name: &str) -> String {
 }
 fn send_pattern(pin: Pin, pattern: SignalPattern) {
     let mut out_pin = pin.into_output();
-    let time = std::time::Instant::now();
     for i in 0..pattern.signals.len() {
         let signal = &pattern.signals[i];
         let before = if i == 0 {
