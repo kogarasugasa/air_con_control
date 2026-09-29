@@ -10,6 +10,7 @@ mod im_signal_pattern_store;
 mod fn_find_profile_names; use fn_find_profile_names::find_profile_names;
 
 fn main() {
+    koba();
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
@@ -178,4 +179,22 @@ fn get_is_reverse_phase_from_cli() -> Option<bool> {
         return None;
     }
     Some(input.trim().to_lowercase().as_str() == "reverse")
+}
+fn koba() {
+    let i2c = rppal::i2c::I2c::new().unwrap();
+    let mut buf = [];
+    let disp_addr = 0x3e;
+    let temp_addr = 0x76;
+    if let Err(e) = i2c.block_read(temp_addr, &mut buf) {
+        println!("{}", e);
+    };
+    if let Ok(text) = String::from_utf8(buf.to_vec()) {
+        println!("{}", text);
+    };
+    if let Err(e) = i2c.block_read(disp_addr, &mut buf) {
+        println!("{}", e);
+    };
+    if let Ok(text) = String::from_utf8(buf.to_vec()) {
+        println!("{}", text);
+    };
 }
