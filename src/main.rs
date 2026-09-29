@@ -47,7 +47,7 @@ fn main() {
                 name: profile_name,
                 signals: receive_pattern(pin),
             };
-            pattern.reverse_phase();
+            //pattern.reverse_phase();
             pattern.save(&path).unwrap();
             println!("saved");
         },
