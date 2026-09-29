@@ -130,7 +130,7 @@ fn receive_pattern(pin: Pin) -> Vec<Signal> {
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_micros(500));
+        thread::sleep(time::Duration::from_micros(100));
     }
     let mut before_signal = match pattern.first() {
         Some(v) => v,
