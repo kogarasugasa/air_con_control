@@ -186,16 +186,20 @@ fn koba() {
     let mut buf = [];
     let disp_addr = 0x3e;
     let temp_addr = 0x76;
+    println!("1");
     if let Err(e) = i2c.block_read(temp_addr, &mut buf) {
         println!("{}", e);
     };
+    println!("2");
     match String::from_utf8(buf.to_vec()) {
         Ok(v) => println!("{}", v),
         Err(e) => eprintln!("{}", e),
     };
+    println!("3");
     if let Err(e) = i2c.block_read(disp_addr, &mut buf) {
         println!("{}", e);
     };
+    println!("1");
     match String::from_utf8(buf.to_vec()) {
         Ok(v) => println!("{}", v),
         Err(e) => eprintln!("{}", e),
