@@ -59,7 +59,7 @@ fn main() {
                 .find(|profile| **profile == profile_name);
             match profile {
                 Some(name) => {
-                    let pin = get_pin(4).unwrap();
+                    let pin = get_pin(13).unwrap();
                     let path = create_profile_path(&profile_path, name);
                     let pattern = SignalPattern::read(&path).unwrap();
                     send_pattern(pin, pattern);
@@ -87,6 +87,7 @@ fn create_profile_path(root: &str, name: &str) -> String {
 }
 fn send_pattern(pin: Pin, pattern: SignalPattern) {
     let mut out_pin = pin.into_output();
+    let time = std::time::Instant::now();
     for i in 0..pattern.signals.len() {
         let signal = &pattern.signals[i];
         let before = if i == 0 {
@@ -96,6 +97,7 @@ fn send_pattern(pin: Pin, pattern: SignalPattern) {
             pattern.signals[i - 1].elapsed
         };
         thread::sleep(signal.elapsed - before);
+        println!("elapsed is {}", time.elapsed());
         match signal.level {
             PinLevel::High => {
                 out_pin.set_high();
