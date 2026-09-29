@@ -23,7 +23,7 @@ fn main() {
         OperationType::Send
     );
     let operation = start_option.get_operation() // 引数から操作を取得する
-        .or(get_operation_type_from_cli()) // 入力から操作を取得する
+        .or_else(|| get_operation_type_from_cli()) // 入力から操作を取得する
     ;
     let operation = match operation {
         Some(v) => v,
@@ -32,7 +32,7 @@ fn main() {
     // プロファイルを指定
     println!("please set profile name");
     let profile_name = start_option.get_profile_name() // 引数から操作を取得する
-        .or(get_profile_name_from_cli()) // 入力から操作を取得する
+        .or_else(|| get_profile_name_from_cli()) // 入力から操作を取得する
     ;
     let profile_name = match profile_name {
         Some(v) => v,
