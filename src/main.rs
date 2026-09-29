@@ -97,7 +97,6 @@ fn send_pattern(pin: Pin, pattern: SignalPattern) {
             pattern.signals[i - 1].elapsed
         };
         thread::sleep(signal.elapsed - before);
-        println!("elapsed is {}", time.elapsed());
         match signal.level {
             PinLevel::High => {
                 out_pin.set_high();
