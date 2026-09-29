@@ -29,4 +29,11 @@ impl StartOption {
             None => None,
         }
     }
+    pub fn get_is_reverse_phase(&self) -> Option<bool> {
+        let text = match self.args.get(3) {
+            Some(v) => v,
+            None => return None,
+        };
+        Some(text.to_lowercase().as_str() == "reverse")
+    }
 }

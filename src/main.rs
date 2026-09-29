@@ -38,6 +38,12 @@ fn main() {
         Some(v) => v,
         None => return
     };
+    // 信号の反転を指定
+    println!("please set reverse phase reverse or origin");
+    let is_reverse_phase = start_option.get_is_reverse_phase()
+        .or_else(|| get_is_reverse_phase_from_cli())
+    ;
+    // 実行
     match operation {
         OperationType::Receive => {
             println!("receive opetation");
@@ -47,7 +53,9 @@ fn main() {
                 name: profile_name,
                 signals: receive_pattern(pin),
             };
-            //pattern.reverse_phase();
+            if is_reverse_phase.unwrap_or(false) {
+                pattern.reverse_phase();
+            }
             pattern.save(&path).unwrap();
             println!("saved");
         },
@@ -60,7 +68,10 @@ fn main() {
                 Some(name) => {
                     let pin = get_pin(13).unwrap();
                     let path = create_profile_path(&profile_path, name);
-                    let pattern = SignalPattern::read(&path).unwrap();
+                    let mut pattern = SignalPattern::read(&path).unwrap();
+                    if is_reverse_phase.unwrap_or(false) {
+                        pattern.reverse_phase();
+                    }
                     send_pattern(pin, pattern);
                 },
                 None => {
@@ -160,4 +171,11 @@ fn get_profile_name_from_cli() -> Option<String> {
         return None;
     }
     Some(input.trim().to_string())
+}
+fn get_is_reverse_phase_from_cli() -> Option<bool> {
+    let mut input = String::new();
+    if let Err(_) = std::io::stdin().read_line(&mut input) {
+        return None;
+    }
+    Some(input.trim().to_lowercase().as_str() == "reverse")
 }
