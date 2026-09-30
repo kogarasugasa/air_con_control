@@ -8,9 +8,10 @@ mod m_pin_level; use m_pin_level::PinLevel;
 mod m_start_option; use m_start_option::StartOption;
 mod im_signal_pattern_store;
 mod fn_find_profile_names; use fn_find_profile_names::find_profile_names;
+mod test; use test::sensor;
 
 fn main() {
-    koba();
+    sensor();
     return;
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
@@ -180,34 +181,4 @@ fn get_is_reverse_phase_from_cli() -> Option<bool> {
         return None;
     }
     Some(input.trim().to_lowercase().as_str() == "reverse")
-}
-fn koba() {
-    let mut i2c = rppal::i2c::I2c::new().unwrap();
-    let mut buf = [];
-    let temp_addr = 0x76;
-    let disp_addr = 0x3e;
-    println!("0");
-    if let Err(e) = i2c.set_slave_address(temp_addr.clone()) {
-        println!("{}", e);
-    };
-    
-    println!("1");
-    //if let Err(e) = i2c.block_read(temp_addr, &mut buf) {
-    if let Err(e) = i2c.read(&mut buf) {
-        println!("{}", e);
-    };
-    println!("2");
-    match String::from_utf8(buf.to_vec()) {
-        Ok(v) => println!("{}", v),
-        Err(e) => eprintln!("{}", e),
-    };
-    println!("3");
-    if let Err(e) = i2c.block_read(disp_addr, &mut buf) {
-        println!("{}", e);
-    };
-    println!("4");
-    match String::from_utf8(buf.to_vec()) {
-        Ok(v) => println!("{}", v),
-        Err(e) => eprintln!("{}", e),
-    };
 }
