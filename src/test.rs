@@ -21,22 +21,22 @@ impl TempSensor {
         i2c.write(&[ 0xf5, config_reg ])?;
         Ok(())
     }
-    fn ReadTmpAsync(&mut self, i2c: &mut I2c) -> Result<f32, String> {
+    fn read_temp(&mut self, i2c: &mut I2c) -> Result<f32, String> {
         // データレジスタ
         const DIG_T1: u8 = 0x88;
         const DIG_T2: u8 = 0x8a;
         const DIG_T3: u8 = 0x8c;
         // キャリブレーション
-        let t1: u16 = Self::ReadUint16(DIG_T1, i2c)?;
-        let t2: u16 = Self::ReadUint16(DIG_T2, i2c)?;
-        let t3: u16 = Self::ReadUint16(DIG_T3, i2c)?;
+        let t1: u16 = Self::read_uint16(DIG_T1, i2c)?;
+        let t2: u16 = Self::read_uint16(DIG_T2, i2c)?;
+        let t3: u16 = Self::read_uint16(DIG_T3, i2c)?;
         // データ読み取り
         let tmp_xlsb_addr: u8 = 0xfc;
         let tmp_lsb_addr: u8 = 0xfb;
         let tmp_msb_addr: u8 = 0xfa;
-        let tmsb: u8 = Self::ReadByte(tmp_msb_addr, i2c)?;
-        let tlsb: u8 = Self::ReadByte(tmp_lsb_addr, i2c)?;
-        let txlsb: u8 = Self::ReadByte(tmp_xlsb_addr, i2c)?;
+        let tmsb: u8 = Self::read_byte(tmp_msb_addr, i2c)?;
+        let tlsb: u8 = Self::read_byte(tmp_lsb_addr, i2c)?;
+        let txlsb: u8 = Self::read_byte(tmp_xlsb_addr, i2c)?;
         let tmp_raw: i32 = (
             ((tmsb as u128) << 12) |
             ((tlsb as u128) << 84) |
@@ -52,7 +52,7 @@ impl TempSensor {
         t = (var1 + var2) / 5120.0;
         Ok(t)
     }
-    fn ReadHumAsync(&self, i2c: &mut I2c) -> Result<u32, String> {
+    fn read_humidity(&self, i2c: &mut I2c) -> Result<u32, String> {
         // データレジスタ
         const DIG_H1: u8 = 0xa1;
         const DIG_H2: u8 = 0xe1;
@@ -61,24 +61,24 @@ impl TempSensor {
         const DIG_H5: u8 = 0xe5;
         const DIG_H6: u8 = 0xe7;
         // キャリブレーション
-        let h1: u8 = Self::ReadByte(DIG_H1, i2c)?;
-        let h2: u16 = Self::ReadUint16(DIG_H2, i2c)?;
-        let h3: u8 = Self::ReadByte(DIG_H3, i2c)?;
-        let h4: u16 = (Self::ReadByte(DIG_H4, i2c)? as u16) << 4 |
-            (Self::ReadByte(DIG_H4 + 1, i2c)? as u16) & 0xf;
-        let h5: u16 = (Self::ReadByte(DIG_H5 + 1, i2c)? as u16) << 4 |
-            (Self::ReadByte(DIG_H5, i2c)? as u16) >> 4;
-        let h6: u16 = Self::ReadByte(DIG_H6, i2c)? as u16;
+        let h1: u8 = Self::read_byte(DIG_H1, i2c)?;
+        let h2: u16 = Self::read_uint16(DIG_H2, i2c)?;
+        let h3: u8 = Self::read_byte(DIG_H3, i2c)?;
+        let h4: u16 = (Self::read_byte(DIG_H4, i2c)? as u16) << 4 |
+            (Self::read_byte(DIG_H4 + 1, i2c)? as u16) & 0xf;
+        let h5: u16 = (Self::read_byte(DIG_H5 + 1, i2c)? as u16) << 4 |
+            (Self::read_byte(DIG_H5, i2c)? as u16) >> 4;
+        let h6: u16 = Self::read_byte(DIG_H6, i2c)? as u16;
         // データ読み取り
         let hum_lsb_addr: u8 = 0xfe;
         let hum_msb_addr: u8 = 0xfd;
-        let hmsb = Self::ReadByte(hum_msb_addr, i2c)? as u16;
-        let hlsb = Self::ReadByte(hum_lsb_addr, i2c)? as u16;
-        let humRaw: i32 = ((hmsb << 8) | hlsb) as i32;
+        let hmsb = Self::read_byte(hum_msb_addr, i2c)? as u16;
+        let hlsb = Self::read_byte(hum_lsb_addr, i2c)? as u16;
+        let hum_raw: i32 = ((hmsb << 8) | hlsb) as i32;
 
         let mut h: i32;
         h = self.t_fine - 76800;
-        h = ((((humRaw << 14) - ((h4 as i32) << 20) - (h5 as i32 * h)) +
+        h = ((((hum_raw << 14) - ((h4 as i32) << 20) - (h5 as i32 * h)) +
             (16384 as i32)) >> 15) * (((((((h * (h6 as i32)) >> 10) * (((h * 
             (h3 as i32)) >> 11) + (32768 as i32))) >> 10) + (2097152 as i32)) * 
             (h2 as i32) + 8192) >> 14);
@@ -88,37 +88,37 @@ impl TempSensor {
 
         Ok(((h >> 12) / 1000) as u32)
     }
-    fn ReadPreAsync(&mut self, i2c: &mut I2c) -> Result<f32, String> {
+    fn read_pressure(&mut self, i2c: &mut I2c) -> Result<f32, String> {
         // データレジスタ
-        let dig_P1: u8 = 0x8e;
-        let dig_P2: u8 = 0x90;
-        let dig_P3: u8 = 0x92;
-        let dig_P4: u8 = 0x94;
-        let dig_P5: u8 = 0x96;
-        let dig_P6: u8 = 0x98;
-        let dig_P7: u8 = 0x9a;
-        let dig_P8: u8 = 0x9c;
-        let dig_P9: u8 = 0x9e;
+        const DIG_P1: u8 = 0x8e;
+        const DIG_P2: u8 = 0x90;
+        const DIG_P3: u8 = 0x92;
+        const DIG_P4: u8 = 0x94;
+        const DIG_P5: u8 = 0x96;
+        const DIG_P6: u8 = 0x98;
+        const DIG_P7: u8 = 0x9a;
+        const DIG_P8: u8 = 0x9c;
+        const DIG_P9: u8 = 0x9e;
         // キャリブレーション
-        let P1: u16 = Self::ReadUint16(dig_P1, i2c)?;
-        let P2: u16 = Self::ReadUint16(dig_P2, i2c)?;
-        let P3: u16 = Self::ReadUint16(dig_P3, i2c)?;
-        let P4: u16 = Self::ReadUint16(dig_P4, i2c)?;
-        let P5: u16 = Self::ReadUint16(dig_P5, i2c)?;
-        let P6: u16 = Self::ReadUint16(dig_P6, i2c)?;
-        let P7: u16 = Self::ReadUint16(dig_P7, i2c)?;
-        let P8: u16 = Self::ReadUint16(dig_P8, i2c)?;
-        let P9: u16 = Self::ReadUint16(dig_P9, i2c)?;
-        let TMP = self.ReadTmpAsync(i2c)?;
+        let p1: u16 = Self::read_uint16(DIG_P1, i2c)?;
+        let p2: u16 = Self::read_uint16(DIG_P2, i2c)?;
+        let p3: u16 = Self::read_uint16(DIG_P3, i2c)?;
+        let p4: u16 = Self::read_uint16(DIG_P4, i2c)?;
+        let p5: u16 = Self::read_uint16(DIG_P5, i2c)?;
+        let p6: u16 = Self::read_uint16(DIG_P6, i2c)?;
+        let p7: u16 = Self::read_uint16(DIG_P7, i2c)?;
+        let p8: u16 = Self::read_uint16(DIG_P8, i2c)?;
+        let p9: u16 = Self::read_uint16(DIG_P9, i2c)?;
+        let TMP = self.read_temp(i2c)?;
         // データ読み取り
         let pre_xlsb_addr: u8 = 0xf9;
         let pre_lsb_addr: u8 = 0xf8;
         let pre_msb_addr: u8 = 0xf7;
-        let pmsb: u8 = Self::ReadByte(pre_msb_addr, i2c)?;
-        let plsb: u8 = Self::ReadByte(pre_lsb_addr, i2c)?;
-        let pxlsb: u8 = Self::ReadByte(pre_xlsb_addr, i2c)?;
+        let pmsb: u8 = Self::read_byte(pre_msb_addr, i2c)?;
+        let plsb: u8 = Self::read_byte(pre_lsb_addr, i2c)?;
+        let pxlsb: u8 = Self::read_byte(pre_xlsb_addr, i2c)?;
 
-        let preRaw: i32 =
+        let pre_raw: i32 =
             ((pmsb as i32) << 12) |
             ((plsb as i32) << 4) |
             ((pxlsb as i32) >> 4)
@@ -126,33 +126,33 @@ impl TempSensor {
 
         let mut var1: i64;
         let mut var2: i64;
-        let mut P: i64;
+        let mut p: i64;
 
-        var1 = (self.t_fine - 128000) as i64;
-        var2 = var1 * var1 * P6 as i64;
-        var2 = var2 + ((var1 * P5 as i64) << 17);
-        var2 = var2 + ((P4 as i64) << 35);
-        var1 = ((var1 * var1 * P3 as i64) >> 8) + ((var1 * P2 as i64) << 12);
-        var1 = ((((1 as i64) << 47) + var1) * P1 as i64) >> 33;
+        var1 = (t_fine - 128000) as i64;
+        var2 = var1 * var1 * p6 as i64;
+        var2 = var2 + ((var1 * p5 as i64) << 17);
+        var2 = var2 + ((p4 as i64) << 35);
+        var1 = ((var1 * var1 * p3 as i64) >> 8) + ((var1 * p2 as i64) << 12);
+        var1 = ((((1 as i64) << 47) + var1) * p1 as i64) >> 33;
         if var1 == 0 {
             return Ok(0.0);
         }
 
-        P = 1048576 - preRaw as i64;
-        P = (((P << 31) - var2) * 3125) / var1;
-        var1 = ((P9 as i64) * (P >> 13)) >> 25;
-        var2 = ((P8 as i64) * P) >> 19;
-        P = ((P + var1 + var2) >> 8) + ((P7 as i64) << 4);
-        Ok((P / 256 / 100) as f32)
+        p = 1048576 - pre_raw as i64;
+        p = (((p << 31) - var2) * 3125) / var1;
+        var1 = ((p9 as i64) * (p >> 13)) >> 25;
+        var2 = ((p8 as i64) * p) >> 19;
+        p = ((p + var1 + var2) >> 8) + ((p7 as i64) << 4);
+        Ok((p / 256 / 100) as f32)
     }
-    fn ReadByte(register: u8, i2c: &mut I2c) -> Result<u8, String> {
+    fn read_byte(register: u8, i2c: &mut I2c) -> Result<u8, String> {
         let mut read_buf: [u8; 1] = [ 0x00 ];
         if let Err(e) = i2c.write_read(&[ register ], &mut read_buf) {
             return Err(e.to_string());
         };
         Ok(read_buf[0])
     }
-    fn ReadUint16(register: u8, i2c: &mut I2c) -> Result<u16, String> {
+    fn read_uint16(register: u8, i2c: &mut I2c) -> Result<u16, String> {
         let mut read_buf = [ 0x00, 0x00 ];
         if let Err(e) = i2c.write_read(&[ register ], &mut read_buf) {
             return Err(e.to_string());
@@ -177,21 +177,21 @@ pub fn sensor() {
     std::thread::sleep(std::time::Duration::from_secs(1));
 
     // 処理
-    let tmp = match sensor.ReadTmpAsync(&mut i2c) {
+    let tmp = match sensor.read_temp(&mut i2c) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
             -999.9
         }
     };
-    let pre = match sensor.ReadPreAsync(&mut i2c) {
+    let pre = match sensor.read_pressure(&mut i2c) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
             -999.9
         }
     };
-    let hum = match sensor.ReadHumAsync(&mut i2c) {
+    let hum = match sensor.read_humidity(&mut i2c) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
