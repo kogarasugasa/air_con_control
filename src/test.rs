@@ -27,8 +27,8 @@ impl TempSensor {
         const DIG_T3: u8 = 0x8c;
         // キャリブレーション
         let t1: u16 = Self::read_uint16(DIG_T1, i2c)?;
-        let t2: u16 = Self::read_uint16(DIG_T2, i2c)?;
-        let t3: u16 = Self::read_uint16(DIG_T3, i2c)?;
+        let t2: i16 = Self::read_uint16(DIG_T2, i2c)? as i16;
+        let t3: i16 = Self::read_uint16(DIG_T3, i2c)? as i16;
         // データ読み取り
         let tmp_xlsb_addr: u8 = 0xfc;
         let tmp_lsb_addr: u8 = 0xfb;
@@ -37,9 +37,9 @@ impl TempSensor {
         let tlsb: u8 = Self::read_byte(tmp_lsb_addr, i2c)?;
         let txlsb: u8 = Self::read_byte(tmp_xlsb_addr, i2c)?;
         let tmp_raw: i32 = (
-            ((tmsb as u128) << 12) |
-            ((tlsb as u128) << 84) |
-            (txlsb as u128 >> 4)
+            ((tmsb as u32) << 12) |
+            ((tlsb as u32) << 4) |
+            (txlsb as u32 >> 4)
         ) as i32;
 
         let var1: f32;
@@ -61,13 +61,17 @@ impl TempSensor {
         const DIG_H6: u8 = 0xe7;
         // キャリブレーション
         let h1: u8 = Self::read_byte(DIG_H1, i2c)?;
-        let h2: u16 = Self::read_uint16(DIG_H2, i2c)?;
+        let h2: i16 = Self::read_uint16(DIG_H2, i2c)? as i16;
         let h3: u8 = Self::read_byte(DIG_H3, i2c)?;
-        let h4: u16 = (Self::read_byte(DIG_H4, i2c)? as u16) << 4 |
-            (Self::read_byte(DIG_H4 + 1, i2c)? as u16) & 0xf;
-        let h5: u16 = (Self::read_byte(DIG_H5 + 1, i2c)? as u16) << 4 |
-            (Self::read_byte(DIG_H5, i2c)? as u16) >> 4;
-        let h6: u16 = Self::read_byte(DIG_H6, i2c)? as u16;
+        let h4: i16 = (
+            (Self::read_byte(DIG_H4, i2c)? as u16) << 4 |
+            (Self::read_byte(DIG_H4 + 1, i2c)? as u16) & 0xf
+        ) as i16;
+        let h5: i16 = (
+            (Self::read_byte(DIG_H5 + 1, i2c)? as u16) << 4 |
+            (Self::read_byte(DIG_H5, i2c)? as u16) >> 4
+        ) as i16;
+        let h6: i16 = Self::read_byte(DIG_H6, i2c)? as i16;
         // データ読み取り
         let hum_lsb_addr: u8 = 0xfe;
         let hum_msb_addr: u8 = 0xfd;
