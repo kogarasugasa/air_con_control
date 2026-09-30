@@ -116,11 +116,11 @@ impl TempSensor {
         let plsb: u8 = Self::read_byte(pre_lsb_addr, i2c)?;
         let pxlsb: u8 = Self::read_byte(pre_xlsb_addr, i2c)?;
 
-        let pre_raw: i32 =
-            ((pmsb as i32) << 12) |
-            ((plsb as i32) << 4) |
-            ((pxlsb as i32) >> 4)
-        ;
+        let pre_raw: i32 = (
+            ((pmsb as u32) << 12) |
+            ((plsb as u32) << 4) |
+            ((pxlsb as u32) >> 4)
+        ) as i32;
 
         let mut var1: i64;
         let mut var2: i64;
