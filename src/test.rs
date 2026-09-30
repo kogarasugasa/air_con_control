@@ -100,14 +100,14 @@ impl TempSensor {
         const DIG_P9: u8 = 0x9e;
         // キャリブレーション
         let p1: u16 = Self::read_uint16(DIG_P1, i2c)?;
-        let p2: u16 = Self::read_uint16(DIG_P2, i2c)?;
-        let p3: u16 = Self::read_uint16(DIG_P3, i2c)?;
-        let p4: u16 = Self::read_uint16(DIG_P4, i2c)?;
-        let p5: u16 = Self::read_uint16(DIG_P5, i2c)?;
-        let p6: u16 = Self::read_uint16(DIG_P6, i2c)?;
-        let p7: u16 = Self::read_uint16(DIG_P7, i2c)?;
-        let p8: u16 = Self::read_uint16(DIG_P8, i2c)?;
-        let p9: u16 = Self::read_uint16(DIG_P9, i2c)?;
+        let p2: i16 = Self::read_uint16(DIG_P2, i2c)? as i16;
+        let p3: i16 = Self::read_uint16(DIG_P3, i2c)? as i16;
+        let p4: i16 = Self::read_uint16(DIG_P4, i2c)? as i16;
+        let p5: i16 = Self::read_uint16(DIG_P5, i2c)? as i16;
+        let p6: i16 = Self::read_uint16(DIG_P6, i2c)? as i16;
+        let p7: i16 = Self::read_uint16(DIG_P7, i2c)? as i16;
+        let p8: i16 = Self::read_uint16(DIG_P8, i2c)? as i16;
+        let p9: i16 = Self::read_uint16(DIG_P9, i2c)? as i16;
         // データ読み取り
         let pre_xlsb_addr: u8 = 0xf9;
         let pre_lsb_addr: u8 = 0xf8;
