@@ -4,20 +4,20 @@ struct TempSensor {
 }
 impl TempSensor {
     fn init(&self, i2c: &mut I2c) -> Result<(), i2c::Error> {
-        let osrs_t: u8 = 3;
-        let osrs_p: u8 = 3;
-        let osrs_h: u8 = 3;
-        let mode: u8 = 3;
-        let t_sb: u8 = 5;
-        let filter: u8 = 0;
-        let spi3w_en: u8 = 0;
-        let ctrl_meas_reg = (osrs_t << 5) | (osrs_p << 2) | mode;
-        let config_reg = (t_sb << 5) | (filter << 2) | spi3w_en;
-        let ctrl_hum_reg = osrs_h;
+        let osrs_t: u32 = 3;
+        let osrs_p: u32 = 3;
+        let osrs_h: u32 = 3;
+        let mode: u32 = 3;
+        let t_sb: u32 = 5;
+        let filter: u32 = 0;
+        let spi3w_en: u32 = 0;
+        let ctrl_meas_reg: u32 = (osrs_t << 5) | (osrs_p << 2) | mode;
+        let config_reg: u32 = (t_sb << 5) | (filter << 2) | spi3w_en;
+        let ctrl_hum_reg: u32 = osrs_h;
         i2c.set_slave_address(self.i2c_addr)?;
-        i2c.write(&[ 0xf2, ctrl_hum_reg ])?;
-        i2c.write(&[ 0xf4, ctrl_meas_reg ])?;
-        i2c.write(&[ 0xf5, config_reg ])?;
+        i2c.write(&[ 0xf2, ctrl_hum_reg as u8 ])?;
+        i2c.write(&[ 0xf4, ctrl_meas_reg as u8 ])?;
+        i2c.write(&[ 0xf5, config_reg as u8 ])?;
         Ok(())
     }
     fn read_temp(&mut self, i2c: &mut I2c, t_fine: &mut i32) -> Result<f32, String> {
