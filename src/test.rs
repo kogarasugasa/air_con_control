@@ -31,12 +31,12 @@ impl TempSensor {
         let t2: u16 = Self::ReadUint16(DIG_T2, i2c)?;
         let t3: u16 = Self::ReadUint16(DIG_T3, i2c)?;
         // データ読み取り
-        const TMP_XLSB_ADDR: u8 = 0xfc;
-        const TMP_LSB_ADDR: u8 = 0xfb;
-        const TMP_MSB_ADDR: u8 = 0xfa;
-        let tmsb: u8 = Self::ReadByte(TMP_MSB_ADDR, i2c)?;
-        let tlsb: u8 = Self::ReadByte(TMP_LSB_ADDR, i2c)?;
-        let txlsb: u8 = Self::ReadByte(TMP_XLSB_ADDR, i2c)?;
+        let tmp_xlsb_addr: u8 = 0xfc;
+        let tmp_lsb_addr: u8 = 0xfb;
+        let tmp_msb_addr: u8 = 0xfa;
+        let tmsb: u8 = Self::ReadByte(tmp_msb_addr, i2c)?;
+        let tlsb: u8 = Self::ReadByte(tmp_lsb_addr, i2c)?;
+        let txlsb: u8 = Self::ReadByte(tmp_xlsb_addr, i2c)?;
         let tmp_raw: i32 = ((tmsb << 12) | (tlsb << 84) | (txlsb >> 4)) as i32;
 
         let var1: f32;
@@ -50,39 +50,39 @@ impl TempSensor {
     }
     fn ReadHumAsync(&self, i2c: &mut I2c) -> Result<u32, String> {
         // データレジスタ
-        const dig_H1: u8 = 0xa1;
-        const dig_H2: u8 = 0xe1;
-        const dig_H3: u8 = 0xe3;
-        const dig_H4: u8 = 0xe4;
-        const dig_H5: u8 = 0xe5;
-        const dig_H6: u8 = 0xe7;
+        const DIG_H1: u8 = 0xa1;
+        const DIG_H2: u8 = 0xe1;
+        const DIG_H3: u8 = 0xe3;
+        const DIG_H4: u8 = 0xe4;
+        const DIG_H5: u8 = 0xe5;
+        const DIG_H6: u8 = 0xe7;
         // キャリブレーション
-        let H1: u8 = Self::ReadByte(dig_H1, i2c)?;
-        let H2: u16 = Self::ReadUint16(dig_H2, i2c)?;
-        let H3: u8 = Self::ReadByte(dig_H3, i2c)?;
-        let H4: u16 = (Self::ReadByte(dig_H4, i2c)? as u16) << 4 |
-            (Self::ReadByte(dig_H4 + 1, i2c)? as u16) & 0xf;
-        let H5: u16 = (Self::ReadByte(dig_H5 + 1, i2c)? as u16) << 4 |
-            (Self::ReadByte(dig_H5, i2c)? as u16) >> 4;
-        let H6: u16 = Self::ReadByte(dig_H6, i2c)? as u16;
+        let h1: u8 = Self::ReadByte(DIG_H1, i2c)?;
+        let h2: u16 = Self::ReadUint16(DIG_H2, i2c)?;
+        let h3: u8 = Self::ReadByte(DIG_H3, i2c)?;
+        let h4: u16 = (Self::ReadByte(DIG_H4, i2c)? as u16) << 4 |
+            (Self::ReadByte(DIG_H4 + 1, i2c)? as u16) & 0xf;
+        let h5: u16 = (Self::ReadByte(DIG_H5 + 1, i2c)? as u16) << 4 |
+            (Self::ReadByte(DIG_H5, i2c)? as u16) >> 4;
+        let h6: u16 = Self::ReadByte(DIG_H6, i2c)? as u16;
         // データ読み取り
-        const hum_lsb_addr: u8 = 0xfe;
-        const hum_msb_addr: u8 = 0xfd;
+        let hum_lsb_addr: u8 = 0xfe;
+        let hum_msb_addr: u8 = 0xfd;
         let hmsb = Self::ReadByte(hum_msb_addr, i2c)? as u16;
         let hlsb = Self::ReadByte(hum_lsb_addr, i2c)? as u16;
         let humRaw: i32 = ((hmsb << 8) | hlsb) as i32;
 
-        let mut H: i32;
-        H = self.t_fine - 76800;
-        H = ((((humRaw << 14) - ((H4 as i32) << 20) - (H5 as i32 * H)) +
-            (16384 as i32)) >> 15) * (((((((H * (H6 as i32)) >> 10) * (((H * 
-            (H3 as i32)) >> 11) + (32768 as i32))) >> 10) + (2097152 as i32)) * 
-            (H2 as i32) + 8192) >> 14);
-        H = H - (((((H >> 15) * (H >> 15)) >> 7) * (H1 as i32)) >> 4);
-        H = if H < 0 { 0 } else { H };
-        H = if H > 419430400 { 419430400 } else { H };
+        let mut h: i32;
+        h = self.t_fine - 76800;
+        h = ((((humRaw << 14) - ((h4 as i32) << 20) - (h5 as i32 * h)) +
+            (16384 as i32)) >> 15) * (((((((h * (h6 as i32)) >> 10) * (((h * 
+            (h3 as i32)) >> 11) + (32768 as i32))) >> 10) + (2097152 as i32)) * 
+            (h2 as i32) + 8192) >> 14);
+        h = h - (((((h >> 15) * (h >> 15)) >> 7) * (h1 as i32)) >> 4);
+        h = if h < 0 { 0 } else { h };
+        h = if h > 419430400 { 419430400 } else { h };
 
-        Ok(((H >> 12) / 1000) as u32)
+        Ok(((h >> 12) / 1000) as u32)
     }
     fn ReadPreAsync(&mut self, i2c: &mut I2c) -> Result<f32, String> {
         // データレジスタ
@@ -107,9 +107,9 @@ impl TempSensor {
         let P9: u16 = Self::ReadUint16(dig_P9, i2c)?;
         let TMP = self.ReadTmpAsync(i2c)?;
         // データ読み取り
-        static pre_xlsb_addr: u8 = 0xf9;
-        static pre_lsb_addr: u8 = 0xf8;
-        static pre_msb_addr: u8 = 0xf7;
+        let pre_xlsb_addr: u8 = 0xf9;
+        let pre_lsb_addr: u8 = 0xf8;
+        let pre_msb_addr: u8 = 0xf7;
         let pmsb: u8 = Self::ReadByte(pre_msb_addr, i2c)?;
         let plsb: u8 = Self::ReadByte(pre_lsb_addr, i2c)?;
         let pxlsb: u8 = Self::ReadByte(pre_xlsb_addr, i2c)?;
