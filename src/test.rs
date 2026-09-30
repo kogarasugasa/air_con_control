@@ -153,7 +153,7 @@ impl TempSensor {
         if let Err(e) = i2c.write_read(&[ register ], &mut read_buf) {
             return Err(e.to_string());
         };
-        let h: u16 = (read_buf[1] << 8) as u16 ;
+        let h: u16 = ((read_buf[1] as u16) << 8) ;
         let l: u16 = read_buf[0] as u16;
         let read_data = h + l;
         Ok(read_data)
