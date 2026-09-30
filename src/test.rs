@@ -1,7 +1,6 @@
 use rppal::i2c::{self, I2c};
 struct TempSensor {
     i2c_addr: u16,
-    t_fine: i32,
 }
 impl TempSensor {
     fn init(&self, i2c: &mut I2c) -> Result<(), i2c::Error> {
@@ -21,7 +20,7 @@ impl TempSensor {
         i2c.write(&[ 0xf5, config_reg ])?;
         Ok(())
     }
-    fn read_temp(&mut self, i2c: &mut I2c) -> Result<f32, String> {
+    fn read_temp(&mut self, i2c: &mut I2c, t_fine: &mut i32) -> Result<f32, String> {
         // データレジスタ
         const DIG_T1: u8 = 0x88;
         const DIG_T2: u8 = 0x8a;
@@ -48,11 +47,11 @@ impl TempSensor {
         let t: f32;
         var1 = ((tmp_raw as f32 / 16384.0) - (t1 as f32 / 1024.0)) * t2 as f32;
         var2 = ((tmp_raw as f32 / 131072.0) - (t1 as f32 / 8192.0)) * t3 as f32;
-        self.t_fine = (var1 + var2) as i32;
+        *t_fine = (var1 + var2) as i32;
         t = (var1 + var2) / 5120.0;
         Ok(t)
     }
-    fn read_humidity(&self, i2c: &mut I2c) -> Result<u32, String> {
+    fn read_humidity(&self, i2c: &mut I2c, t_fine: i32) -> Result<u32, String> {
         // データレジスタ
         const DIG_H1: u8 = 0xa1;
         const DIG_H2: u8 = 0xe1;
@@ -77,7 +76,7 @@ impl TempSensor {
         let hum_raw: i32 = ((hmsb << 8) | hlsb) as i32;
 
         let mut h: i32;
-        h = self.t_fine - 76800;
+        h = t_fine - 76800;
         h = ((((hum_raw << 14) - ((h4 as i32) << 20) - (h5 as i32 * h)) +
             (16384 as i32)) >> 15) * (((((((h * (h6 as i32)) >> 10) * (((h * 
             (h3 as i32)) >> 11) + (32768 as i32))) >> 10) + (2097152 as i32)) * 
@@ -88,7 +87,7 @@ impl TempSensor {
 
         Ok(((h >> 12) / 1000) as u32)
     }
-    fn read_pressure(&mut self, i2c: &mut I2c) -> Result<f32, String> {
+    fn read_pressure(&mut self, i2c: &mut I2c, t_fine: i32) -> Result<f32, String> {
         // データレジスタ
         const DIG_P1: u8 = 0x8e;
         const DIG_P2: u8 = 0x90;
@@ -109,7 +108,6 @@ impl TempSensor {
         let p7: u16 = Self::read_uint16(DIG_P7, i2c)?;
         let p8: u16 = Self::read_uint16(DIG_P8, i2c)?;
         let p9: u16 = Self::read_uint16(DIG_P9, i2c)?;
-        let TMP = self.read_temp(i2c)?;
         // データ読み取り
         let pre_xlsb_addr: u8 = 0xf9;
         let pre_lsb_addr: u8 = 0xf8;
@@ -168,8 +166,8 @@ impl TempSensor {
 pub fn sensor() {
     let mut sensor = TempSensor {
         i2c_addr: 0x76,
-        t_fine: i32::MIN, // データ校正用変数
     };
+    let mut t_fine = i32::MIN; // データ校正用変数
     let mut i2c = I2c::new().unwrap();
     
     // 初期化
@@ -177,21 +175,21 @@ pub fn sensor() {
     std::thread::sleep(std::time::Duration::from_secs(1));
 
     // 処理
-    let tmp = match sensor.read_temp(&mut i2c) {
+    let tmp = match sensor.read_temp(&mut i2c, &mut t_fine) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
             -999.9
         }
     };
-    let pre = match sensor.read_pressure(&mut i2c) {
+    let pre = match sensor.read_pressure(&mut i2c, t_fine) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
             -999.9
         }
     };
-    let hum = match sensor.read_humidity(&mut i2c) {
+    let hum = match sensor.read_humidity(&mut i2c, t_fine) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
