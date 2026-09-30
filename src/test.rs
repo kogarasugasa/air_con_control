@@ -37,7 +37,11 @@ impl TempSensor {
         let tmsb: u8 = Self::ReadByte(tmp_msb_addr, i2c)?;
         let tlsb: u8 = Self::ReadByte(tmp_lsb_addr, i2c)?;
         let txlsb: u8 = Self::ReadByte(tmp_xlsb_addr, i2c)?;
-        let tmp_raw: i32 = (((tmsb as u32) << 12) | ((tlsb as u32) << 84) | (txlsb as u32 >> 4)) as i32;
+        let tmp_raw: i32 = (
+            ((tmsb as u128) << 12) |
+            ((tlsb as u128) << 84) |
+            (txlsb as u128 >> 4)
+        ) as i32;
 
         let var1: f32;
         let var2: f32;
