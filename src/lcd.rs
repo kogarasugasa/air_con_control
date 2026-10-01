@@ -1,30 +1,65 @@
 use rppal::i2c::{self, I2c};
-struct TempSensor {
-    i2c_addr: u16,
+
+pub fn sensor() {
+    let mut sensor = Lcd {
+        i2c_addr: 0x3e,
+    };
+    let mut i2c = I2c::new().unwrap();
+    
+    // 初期化
+    let _ = sensor.init(&mut i2c);
+    std::thread::sleep(std::time::Duration::from_secs(1));
+
+    // 処理
+    let tmp = match sensor.read_temperature(&mut i2c, &mut t_fine) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{}", e);
+            -999.9
+        }
+    };
+    let pre = match sensor.read_pressure(&mut i2c, t_fine) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{}", e);
+            -999.9
+        }
+    };
+    let hum = match sensor.read_humidity(&mut i2c, t_fine) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("{}", e);
+            999
+        }
+    };
+    println!("tmp ({}) / pre ({}) / hum ({})", tmp, pre, hum);
 }
-impl TempSensor {
+struct Line {
+    value: String,
+    pos: u32,
+}
+struct Lcd {
+    i2c_addr: u16,
+    lines: [String; 2],
+    lines_pos: [u32; 2],
+}
+impl Lcd {
     fn init(&self, i2c: &mut I2c) -> Result<(), i2c::Error> {
-        let osrs_t: u32 = 3;
-        let osrs_p: u32 = 3;
-        let osrs_h: u32 = 3;
-        let mode: u32 = 3;
-        let t_sb: u32 = 5;
-        let filter: u32 = 0;
-        let spi3w_en: u32 = 0;
-        let ctrl_meas_reg: u32 = (osrs_t << 5) | (osrs_p << 2) | mode;
-        let config_reg: u32 = (t_sb << 5) | (filter << 2) | spi3w_en;
-        let ctrl_hum_reg: u32 = osrs_h;
         i2c.set_slave_address(self.i2c_addr)?;
-        i2c.write(&[ 0xf2, ctrl_hum_reg as u8 ])?;
-        i2c.write(&[ 0xf4, ctrl_meas_reg as u8 ])?;
-        i2c.write(&[ 0xf5, config_reg as u8 ])?;
+        i2c.write(&[ 0x38, 1 ])?;
+        i2c.write(&[ 0x39, 1 ])?;
+        i2c.write(&[ 0x14, 1 ])?;
+        i2c.write(&[ 0x71, 1 ])?;
+        i2c.write(&[ 0x56, 1 ])?;
+        i2c.write(&[ 0x6c, 250 ])?;
+        i2c.write(&[ 0x38, 1 ])?;
+        i2c.write(&[ 0x0c, 1 ])?;
+        i2c.write(&[ 0x01, 200 ])?;
         Ok(())
     }
-    fn read_temp(&mut self, i2c: &mut I2c, t_fine: &mut i32) -> Result<f32, String> {
+    fn write_line(&mut self, i2c: &mut I2c, text: &str) -> Result<f32, String> {
         // データレジスタ
-        const DIG_T1: u8 = 0x88;
-        const DIG_T2: u8 = 0x8a;
-        const DIG_T3: u8 = 0x8c;
+        
         // キャリブレーション
         let t1: u16 = Self::read_uint16(DIG_T1, i2c)?;
         let t2: i16 = Self::read_uint16(DIG_T2, i2c)? as i16;
@@ -165,48 +200,3 @@ impl TempSensor {
         Ok(read_data)
     }
 }
-
-
-pub fn sensor() {
-    let mut sensor = TempSensor {
-        i2c_addr: 0x76,
-    };
-    let mut t_fine = i32::MIN; // データ校正用変数
-    let mut i2c = I2c::new().unwrap();
-    
-    // 初期化
-    let _ = sensor.init(&mut i2c);
-    std::thread::sleep(std::time::Duration::from_secs(1));
-
-    // 処理
-    let tmp = match sensor.read_temp(&mut i2c, &mut t_fine) {
-        Ok(v) => v,
-        Err(e) => {
-            println!("{}", e);
-            -999.9
-        }
-    };
-    let pre = match sensor.read_pressure(&mut i2c, t_fine) {
-        Ok(v) => v,
-        Err(e) => {
-            println!("{}", e);
-            -999.9
-        }
-    };
-    let hum = match sensor.read_humidity(&mut i2c, t_fine) {
-        Ok(v) => v,
-        Err(e) => {
-            println!("{}", e);
-            999
-        }
-    };
-    println!("tmp ({}) / pre ({}) / hum ({})", tmp, pre, hum);
-}
-
-
-
-
-
-
-
-

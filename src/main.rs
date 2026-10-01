@@ -8,11 +8,12 @@ mod m_pin_level; use m_pin_level::PinLevel;
 mod m_start_option; use m_start_option::StartOption;
 mod im_signal_pattern_store;
 mod fn_find_profile_names; use fn_find_profile_names::find_profile_names;
-mod test; use test::sensor;
+mod temperature; use temperature::sensor;
+mod lcd; use lcd::display;
 
 fn main() {
     sensor();
-    return;
+    display();
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
