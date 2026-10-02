@@ -1,5 +1,4 @@
-use std::{thread, time};
-use rppal::gpio::{self, Pin};
+use rppal::gpio;
 
 mod m_signal;
 mod m_signal_pattern; use m_signal_pattern::SignalPattern;
@@ -97,6 +96,7 @@ fn main() {
     let mut profile_name = None;
     loop {
         if operation.is_none() {
+println!("------------ 1");
             if ope_recv_btn.is_on() {
                 operation = Some(OperationType::Receive);
                 println!("receive operation selected");
@@ -106,7 +106,9 @@ fn main() {
                 println!("send operation selected");
             }
         }
+println!("------------ 2");
         if profile_name.is_none() {
+println!("------------ 3");
             for (i, btn) in pro_btns.iter().enumerate() {
                 if btn.is_on() {
                     profile_name = Some(format!("profile{}", i + 1));
@@ -116,20 +118,26 @@ fn main() {
             }
         }
         if exe_btn.is_on() {
-            if operation.is_some() && profile_name.is_some() {
-                print!("execute operation: {} / profile: {} ... ",
-                    operation.unwrap(),
-                    profile_name.clone().unwrap()
-                );
-                ir_tranceiver(
-                    operation.unwrap(),
-                    false,
-                    profile_name.clone().unwrap(),
-                    &profile_path
-                );
-                operation = None;
-                profile_name = None;
-            }
+println!("------------ 4");
+            let operation = match operation.take() {
+                Some(v) => v,
+                None => continue
+            };
+println!("------------ 5");
+            let profile_name = match profile_name.take() {
+                Some(v) => v,
+                None => continue
+            };
+            print!("execute operation: {} / profile: {} ... ",
+                operation,
+                profile_name
+            );
+            ir_tranceiver(
+                operation,
+                false,
+                profile_name,
+                &profile_path
+            );
         }
         std::thread::sleep(std::time::Duration::from_millis(10));
     }
