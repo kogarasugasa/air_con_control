@@ -152,10 +152,12 @@ fn ir_tranceiver(
                 name: profile_name.to_string(),
                 signals: receive_pattern(get_pin(4).unwrap()),
             };
+println!("receive pattern: {:?}", pattern);
             if is_reverse_phase {
                 pattern.reverse_phase();
             }
             let path = create_profile_path(&profile_path, &pattern.name);
+println!("save path: {}", path);
             pattern.save(&path).unwrap();
             println!("saved");
         },
