@@ -58,13 +58,12 @@ fn main() {
         .or_else(|| get_is_reverse_phase_from_cli())
     ;
     // 実行
-    let path = create_profile_path(&profile_path, &profile_name);
     if start_option.is_some() {
         ir_tranceiver(
             operation,
             is_reverse_phase.unwrap_or(false),
             profile_name.clone(),
-            path
+            &profile_path
         );
         return;
     }
@@ -122,15 +121,11 @@ fn main() {
                     operation.unwrap(),
                     profile_name.clone().unwrap()
                 );
-                let path = create_profile_path(
-                    &profile_path,
-                    &profile_name.clone().unwrap()
-                );
                 ir_tranceiver(
                     operation.unwrap(),
                     false,
                     profile_name.clone().unwrap(),
-                    path
+                    &profile_path
                 );
                 operation = None;
                 profile_name = None;
@@ -143,7 +138,7 @@ fn ir_tranceiver(
     operation: OperationType,
     is_reverse_phase: bool,
     profile_name: String,
-    profile_path: String
+    root: &str
 ) {
     match operation {
         OperationType::Receive => {
@@ -152,23 +147,21 @@ fn ir_tranceiver(
                 name: profile_name.to_string(),
                 signals: receive_pattern(get_pin(4).unwrap()),
             };
-println!("receive pattern: {:?}", pattern);
             if is_reverse_phase {
                 pattern.reverse_phase();
             }
-            let path = create_profile_path(&profile_path, &pattern.name);
-println!("save path: {}", path);
+            let path = create_profile_path(root, &profile_name);
             pattern.save(&path).unwrap();
             println!("saved");
         },
         OperationType::Send => {
             println!("send opetation");
-            let profile_names = find_profile_names(&profile_path).unwrap();
+            let profile_names = find_profile_names(root).unwrap();
             let profile = profile_names.iter()
                 .find(|profile| **profile == profile_name);
             match profile {
                 Some(name) => {
-                    let path = create_profile_path(&profile_path, name);
+                    let path = create_profile_path(root, name);
                     let mut pattern = SignalPattern::read(&path).unwrap();
                     if is_reverse_phase {
                         pattern.reverse_phase();
