@@ -1,4 +1,3 @@
-use std::time;
 use serde::{Serialize, Deserialize};
 
 use crate::{m_pin_level::PinLevel, m_signal::Signal};
@@ -9,9 +8,6 @@ pub struct SignalPattern {
     pub signals: Vec<Signal>,
 }
 impl SignalPattern {
-    pub fn duration(&self) -> time::Duration {
-        self.signals.iter().map(|sig| sig.elapsed).sum()
-    }
     pub fn reverse_phase(&mut self) {
         for signal in self.signals.iter_mut() {
             match signal.level {
