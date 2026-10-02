@@ -13,7 +13,7 @@ impl StartOption {
         Self { args }
     }
     pub fn is_some(&self) -> bool {
-        self.args.len() >= 1
+        self.args.len() >= 2
     }
     pub fn get_operation(&self) -> Option<OperationType> {
         let arg1 = match self.args.get(1) {
