@@ -100,21 +100,28 @@ fn main() {
         if operation.is_none() {
             if ope_recv_btn.is_on() {
                 operation = Some(OperationType::Receive);
+                println!("receive operation selected");
             }
             else if ope_send_btn.is_on() {
                 operation = Some(OperationType::Send);
+                println!("send operation selected");
             }
         }
         if profile_name.is_none() {
             for (i, btn) in pro_btns.iter().enumerate() {
                 if btn.is_on() {
                     profile_name = Some(format!("profile{}", i + 1));
+                    println!("profile{} selected", i + 1);
                     break;
                 }
             }
         }
         if exe_btn.is_on() {
             if operation.is_some() && profile_name.is_some() {
+                print!("execute operation: {} / profile: {} ... ",
+                    operation.unwrap(),
+                    profile_name.clone().unwrap()
+                );
                 let path = create_profile_path(
                     &profile_path,
                     &profile_name.clone().unwrap()
