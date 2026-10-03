@@ -94,7 +94,7 @@ fn main() {
     };
     let mut operation = None;
     let mut profile_name = None;
-    let mut is_reverse_phase = false;
+    let mut is_reverse_phase = None;
     loop {
         if operation.is_none() {
             if ope_recv_btn.is_on() {
@@ -106,9 +106,11 @@ fn main() {
                 println!("send operation selected");
             }
         }
-        if reverse_btn.is_on() {
-            is_reverse_phase = !is_reverse_phase;
-            println!("reverse phase: {}", is_reverse_phase);
+        if is_reverse_phase.is_none() {
+            if reverse_btn.is_on() {
+                is_reverse_phase = Some(true);
+                println!("reverse phase selected");
+            }
         }
         if profile_name.is_none() {
             for (i, btn) in pro_btns.iter().enumerate() {
@@ -128,9 +130,14 @@ fn main() {
                 Some(v) => v,
                 None => continue
             };
-            print!("execute operation: {} / profile: {} ... ",
+            let is_reverse_phase = match is_reverse_phase.take() {
+                Some(v) => v,
+                None => false
+            };
+            println!("execute operation: {} / profile: {} / reverse phase: {}",
                 operation,
-                profile_name
+                profile_name,
+                is_reverse_phase
             );
             ir_tranceiver(
                 operation,

@@ -27,12 +27,18 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     }
 }
 pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
-    let mut pattern = Vec::with_capacity(12000);
+    let span_secs = 1 / 1000 / 1000 * 5; // 5 microseconds
+    let span_micros: u64 = span_secs * 1000 * 1000;
+    let recording_secs = 5; // 5 seconds
+    let pre_capacity: usize = (recording_secs / span_secs) as usize;
+println!("pre_capacity: {}", pre_capacity);
+    let mut pattern = Vec::with_capacity(pre_capacity);
     let init_val = pin.read();
     while pin.read() == init_val {
-        thread::sleep(time::Duration::from_millis(1));
+        thread::sleep(time::Duration::from_micros(span_micros));
     }
-    let receive_timer = thread::spawn(move || thread::sleep(time::Duration::from_secs(5)));
+    let receive_timer = thread::spawn(
+        move || thread::sleep(time::Duration::from_secs(recording_secs)));
     let std_time = time::Instant::now();
     while !receive_timer.is_finished() {
         let signal = Signal {
@@ -40,7 +46,7 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_micros(10));
+        thread::sleep(time::Duration::from_micros(span_micros));
     }
     let mut before_signal = match pattern.first() {
         Some(v) => v,
@@ -49,8 +55,8 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
     let mut compress = vec![before_signal.clone()];
     for i in 1..pattern.len() {
         let signal = &pattern[i];
-        let span = signal.elapsed - before_signal.elapsed;
-        if span.as_millis() >= 1000 {
+        let SPAN = signal.elapsed - before_signal.elapsed;
+        if SPAN.as_millis() >= 1000 {
             break;
         }
         if before_signal.level != signal.level {
