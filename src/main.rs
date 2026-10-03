@@ -74,11 +74,11 @@ fn main() {
         pin: ButtonPinNumber::Button2.get_pin(),
         on_level: gpio::Level::Low,
     };
+    let reverse_btn = Button {
+        pin: ButtonPinNumber::Button3.get_pin(),
+        on_level: gpio::Level::Low,
+    };
     let pro_btns = [
-        Button {
-            pin: ButtonPinNumber::Button3.get_pin(),
-            on_level: gpio::Level::Low,
-        },
         Button {
             pin: ButtonPinNumber::Button4.get_pin(),
             on_level: gpio::Level::Low,
@@ -94,6 +94,7 @@ fn main() {
     };
     let mut operation = None;
     let mut profile_name = None;
+    let mut is_reverse_phase = false;
     loop {
         if operation.is_none() {
             if ope_recv_btn.is_on() {
@@ -104,6 +105,10 @@ fn main() {
                 operation = Some(OperationType::Send);
                 println!("send operation selected");
             }
+        }
+        if reverse_btn.is_on() {
+            is_reverse_phase = !is_reverse_phase;
+            println!("reverse phase: {}", is_reverse_phase);
         }
         if profile_name.is_none() {
             for (i, btn) in pro_btns.iter().enumerate() {
@@ -129,7 +134,7 @@ fn main() {
             );
             ir_tranceiver(
                 operation,
-                false,
+                is_reverse_phase,
                 profile_name,
                 &profile_path
             );
