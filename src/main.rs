@@ -68,29 +68,29 @@ fn main() {
     }
     let ope_send_btn = Button {
         pin: ButtonPinNumber::Button1.get_pin(),
-        on_level: gpio::Level::High,
+        on_level: gpio::Level::Low,
     };
     let ope_recv_btn = Button {
         pin: ButtonPinNumber::Button2.get_pin(),
-        on_level: gpio::Level::High,
+        on_level: gpio::Level::Low,
     };
     let pro_btns = [
         Button {
             pin: ButtonPinNumber::Button3.get_pin(),
-            on_level: gpio::Level::High,
+            on_level: gpio::Level::Low,
         },
         Button {
             pin: ButtonPinNumber::Button4.get_pin(),
-            on_level: gpio::Level::High,
+            on_level: gpio::Level::Low,
         },
         Button {
             pin: ButtonPinNumber::Button5.get_pin(),
-            on_level: gpio::Level::High,
+            on_level: gpio::Level::Low,
         },
     ];
     let exe_btn = Button {
         pin: ButtonPinNumber::Button6.get_pin(),
-        on_level: gpio::Level::High,
+        on_level: gpio::Level::Low,
     };
     let mut operation = None;
     let mut profile_name = None;
