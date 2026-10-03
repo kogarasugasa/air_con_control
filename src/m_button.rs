@@ -39,6 +39,6 @@ impl ButtonPinNumber {
     pub fn get_pin(&self) -> gpio::InputPin {
         gpio::Gpio::new().unwrap()
             .get(*self as u8).unwrap()
-            .into_input()
+            .into_input_pullup()
     }
 }
