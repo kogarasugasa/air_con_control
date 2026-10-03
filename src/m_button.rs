@@ -3,7 +3,7 @@ use std::time::Duration;
 use rppal::gpio;
 
 pub struct Button {
-    pub pin: gpio::Pin,
+    pub pin: gpio::InputPin,
     pub on_level: gpio::Level,
 }
 impl Button {
@@ -36,7 +36,9 @@ pub enum ButtonPinNumber {
     Button6 = 27,
 }
 impl ButtonPinNumber {
-    pub fn get_pin(&self) -> gpio::Pin {
-        gpio::Gpio::new().unwrap().get(*self as u8).unwrap()
+    pub fn get_pin(&self) -> gpio::InputPin {
+        gpio::Gpio::new().unwrap()
+            .get(*self as u8).unwrap()
+            .into_input()
     }
 }
