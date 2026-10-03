@@ -96,7 +96,6 @@ fn main() {
     let mut profile_name = None;
     loop {
         if operation.is_none() {
-println!("------------ 1");
             if ope_recv_btn.is_on() {
                 operation = Some(OperationType::Receive);
                 println!("receive operation selected");
@@ -106,9 +105,7 @@ println!("------------ 1");
                 println!("send operation selected");
             }
         }
-println!("------------ 2");
         if profile_name.is_none() {
-println!("------------ 3");
             for (i, btn) in pro_btns.iter().enumerate() {
                 if btn.is_on() {
                     profile_name = Some(format!("profile{}", i + 1));
@@ -118,12 +115,10 @@ println!("------------ 3");
             }
         }
         if exe_btn.is_on() {
-println!("------------ 4");
             let operation = match operation.take() {
                 Some(v) => v,
                 None => continue
             };
-println!("------------ 5");
             let profile_name = match profile_name.take() {
                 Some(v) => v,
                 None => continue
