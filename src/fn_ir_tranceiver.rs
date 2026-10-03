@@ -29,8 +29,11 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
 pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
     let span_secs = 1 / 1000 / 1000 * 5; // 5 microseconds
     let span_micros: u64 = span_secs * 1000 * 1000;
-    let recording_secs = 5; // 5 seconds
-    let pre_capacity: usize = (recording_secs / span_secs) as usize;
+    let recording_secs: u64 = 5; // 5 seconds
+    let pre_capacity = match recording_secs.checked_div(span_secs) {
+        Some(v) => v as usize,
+        None => 0
+    };
 println!("pre_capacity: {}", pre_capacity);
     let mut pattern = Vec::with_capacity(pre_capacity);
     let init_val = pin.read();
