@@ -22,8 +22,10 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         let signal = &pattern.signals[i];
         let before = pattern.signals[i - 1].elapsed;
         let span = signal.elapsed - before;
-        if signal.level == PinLevel::High {
-            out_wave(&mut out_pin, &signal.level, &span);
+
+        match signal.level {
+            PinLevel::High => out_wave(&mut out_pin, &signal.level, span),
+            PinLevel::Low => thread::sleep(span)
         }
     }
     out_pin.set_low();
@@ -74,7 +76,7 @@ pub fn get_pin(num: u8) -> Result<gpio::Pin, gpio::Error> {
     let pin = gpio::Gpio::new()?.get(num)?;
     Ok(pin)
 }
-fn out_wave(pin: &mut gpio::OutputPin, level: &PinLevel, duration: &time::Duration) {
+fn out_wave(pin: &mut gpio::OutputPin, level: &PinLevel, duration: time::Duration) {
     let mut total_nanos = 0;
 
     while duration.as_nanos() > total_nanos {
