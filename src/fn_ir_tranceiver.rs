@@ -1,5 +1,5 @@
 use std::{thread, time};
-use rppal::gpio::{self, Pin};
+use rppal::gpio::{self,};
 
 use crate::m_signal::Signal;
 use crate::m_signal_pattern::SignalPattern;
@@ -24,7 +24,16 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         let span = signal.elapsed - before;
 
         match signal.level {
-            PinLevel::High => out_wave(&mut out_pin, &signal.level, span),
+            PinLevel::High => {
+                let mut total_nanos = 0;
+                while span.as_nanos() > total_nanos {
+                    out_pin.set_high();
+                    thread::sleep(time::Duration::from_micros(9));
+                    out_pin.set_low();
+                    thread::sleep(time::Duration::from_micros(17));
+                    total_nanos += 9000 + 17000;
+                }
+            },
             PinLevel::Low => thread::sleep(span)
         }
     }
@@ -75,25 +84,4 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
 pub fn get_pin(num: u8) -> Result<gpio::Pin, gpio::Error> {
     let pin = gpio::Gpio::new()?.get(num)?;
     Ok(pin)
-}
-fn out_wave(pin: &mut gpio::OutputPin, level: &PinLevel, duration: time::Duration) {
-    let mut total_nanos = 0;
-
-    while duration.as_nanos() > total_nanos {
-        match level {
-            PinLevel::High => {
-                pin.set_high();
-                thread::sleep(time::Duration::from_micros(9));
-                pin.set_low();
-                thread::sleep(time::Duration::from_micros(17));
-            },
-            PinLevel::Low => {
-                pin.set_low();
-                thread::sleep(time::Duration::from_micros(9));
-                pin.set_low();
-                thread::sleep(time::Duration::from_micros(17));
-            }
-        }
-        total_nanos += 9000 + 17000;
-    }
 }
