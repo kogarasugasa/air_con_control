@@ -42,6 +42,7 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         }
     }
     out_pin.set_low();
+    println!("send_pattern() end")
 }
 pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
     let span_secs: f64 = 1.0 / 1000.0 / 1000.0 * 5.0; // 5 microseconds
