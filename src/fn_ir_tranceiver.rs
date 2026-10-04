@@ -94,6 +94,6 @@ fn out_wave(pin: &mut gpio::OutputPin, level: &PinLevel, duration: time::Duratio
                 thread::sleep(time::Duration::from_micros(17));
             }
         }
-        total_nanos += 9000;
+        total_nanos += 9000 + 17000;
     }
 }
