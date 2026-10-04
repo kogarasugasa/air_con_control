@@ -6,10 +6,10 @@ use crate::m_signal_pattern::SignalPattern;
 use crate::m_pin_level::PinLevel;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
-    let hz = 38000;
-    let hz_us = 1 / hz * 1000 * 1000;
-    let high_us = hz_us / 3; // 1 / 3 duty
-    let low_us = hz_us - high_us;
+    let hz: f64 = 38000.0;
+    let hz_us = (1.0 / hz * 1000.0 * 1000.0);
+    let high_us = (hz_us / 3.0) as u64; // 1 / 3 duty
+    let low_us = (hz_us as u64 - high_us) as u64;
 println!("hz_us is {}", hz_us);
 println!("high_us is {}", high_us);
     let mut out_pin = pin.into_output();
