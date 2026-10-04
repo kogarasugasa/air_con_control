@@ -10,6 +10,8 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let hz_us = 1 / hz * 1000 * 1000;
     let high_us = hz_us / 3; // 1 / 3 duty
     let low_us = hz_us - high_us;
+println!("hz_us is {}", hz_us);
+println!("high_us is {}", high_us);
     let mut out_pin = pin.into_output();
     let first = match pattern.signals.first() {
         Some(v) => v,
