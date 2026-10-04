@@ -15,24 +15,25 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     out_pin.set_low();
     if first.level == PinLevel::High {
         out_pin.set_high();
-        thread::sleep(time::Duration::from_micros(9));
-        out_pin.set_low();
+        // thread::sleep(time::Duration::from_micros(9));
+        // out_pin.set_low();
     }
 
     for i in range {
         let signal = &pattern.signals[i];
         let before = pattern.signals[i - 1].elapsed;
         thread::sleep(signal.elapsed - before);
-        if signal.level == PinLevel::High {
-            out_pin.set_high();
-            thread::sleep(time::Duration::from_micros(9));
-            out_pin.set_low();
-        }
-        // match signal.level {
-        //     PinLevel::High => out_pin.set_high(),
-        //     PinLevel::Low => out_pin.set_low()
+        // if signal.level == PinLevel::High {
+        //     out_pin.set_high();
+        //     thread::sleep(time::Duration::from_micros(9));
+        //     out_pin.set_low();
         // }
+        match signal.level {
+            PinLevel::High => out_pin.set_high(),
+            PinLevel::Low => out_pin.set_low()
+        }
     }
+    out_pin.set_low();
 }
 pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
     let span_secs: f64 = 1.0 / 1000.0 / 1000.0 * 5.0; // 5 microseconds
