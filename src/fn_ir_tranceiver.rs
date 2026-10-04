@@ -21,10 +21,15 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         let signal = &pattern.signals[i];
         let before = pattern.signals[i - 1].elapsed;
         thread::sleep(signal.elapsed - before);
-        match signal.level {
-            PinLevel::High => out_pin.set_high(),
-            PinLevel::Low => out_pin.set_low()
+        if signal.level == PinLevel::High {
+            out_pin.set_high();
+            thread::sleep(std::time::Duration::from_micros(9));
+            out_pin.set_low();
         }
+        // match signal.level {
+        //     PinLevel::High => out_pin.set_high(),
+        //     PinLevel::Low => out_pin.set_low()
+        // }
     }
 }
 pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
