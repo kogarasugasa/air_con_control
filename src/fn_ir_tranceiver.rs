@@ -47,7 +47,7 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
             elapsed: std_time.elapsed(),
         };
         pattern.push(signal);
-        thread::sleep(time::Duration::from_micros(span_micros));
+        //thread::sleep(time::Duration::from_micros(span_micros));
     }
 
     // 信号の変化のない部分を削除する
