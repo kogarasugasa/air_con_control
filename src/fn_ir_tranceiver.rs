@@ -1,5 +1,5 @@
 use std::{thread, time};
-use rppal::gpio;
+use rppal::gpio::{self, Pin};
 
 use crate::m_signal::Signal;
 use crate::m_signal_pattern::SignalPattern;
@@ -12,9 +12,11 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         None => return
     };
     let range = 1..pattern.signals.len();
-    match first.level {
-        PinLevel::High => out_pin.set_high(),
-        PinLevel::Low => out_pin.set_low()
+    out_pin.set_low();
+    if first.level == PinLevel::High {
+        out_pin.set_high();
+        thread::sleep(time::Duration::from_micros(9));
+        out_pin.set_low();
     }
 
     for i in range {
@@ -23,7 +25,7 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         thread::sleep(signal.elapsed - before);
         if signal.level == PinLevel::High {
             out_pin.set_high();
-            thread::sleep(std::time::Duration::from_micros(9));
+            thread::sleep(time::Duration::from_micros(9));
             out_pin.set_low();
         }
         // match signal.level {
