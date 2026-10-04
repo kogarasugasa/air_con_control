@@ -7,22 +7,23 @@ use crate::m_pin_level::PinLevel;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let mut out_pin = pin.into_output();
-    for i in 0..pattern.signals.len() {
+    let first = match pattern.signals.first() {
+        Some(v) => v,
+        None => return
+    };
+    let range = 1..pattern.signals.len();
+    match first.level {
+        PinLevel::High => out_pin.set_high(),
+        PinLevel::Low => out_pin.set_low()
+    }
+
+    for i in range {
         let signal = &pattern.signals[i];
-        let before = if i == 0 {
-            time::Duration::ZERO
-        }
-        else {
-            pattern.signals[i - 1].elapsed
-        };
+        let before = pattern.signals[i - 1].elapsed;
         thread::sleep(signal.elapsed - before);
         match signal.level {
-            PinLevel::High => {
-                out_pin.set_high();
-            },
-            PinLevel::Low => {
-                out_pin.set_low();
-            }
+            PinLevel::High => out_pin.set_high(),
+            PinLevel::Low => out_pin.set_low()
         }
     }
 }
@@ -30,8 +31,8 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
     let span_secs: f64 = 1.0 / 1000.0 / 1000.0 * 5.0; // 5 microseconds
     let span_micros: u64 = (span_secs * 1000.0 * 1000.0) as u64;
     let recording_secs: u64 = 5; // 5 seconds
+    // 事前に容量を確保しておくことで、パターンの記録中にメモリの再確保が発生するのを防ぐ
     let pre_capacity = (recording_secs as f64 / span_secs) as usize;
-println!("pre_capacity: {}", pre_capacity);
     let mut pattern = Vec::with_capacity(pre_capacity);
     let init_val = pin.read();
     while pin.read() == init_val {
@@ -48,6 +49,8 @@ println!("pre_capacity: {}", pre_capacity);
         pattern.push(signal);
         thread::sleep(time::Duration::from_micros(span_micros));
     }
+
+    // 信号の変化のない部分を削除する
     let mut before_signal = match pattern.first() {
         Some(v) => v,
         None => return vec![]
@@ -55,8 +58,8 @@ println!("pre_capacity: {}", pre_capacity);
     let mut compress = vec![before_signal.clone()];
     for i in 1..pattern.len() {
         let signal = &pattern[i];
-        let SPAN = signal.elapsed - before_signal.elapsed;
-        if SPAN.as_millis() >= 1000 {
+        let span = signal.elapsed - before_signal.elapsed;
+        if span.as_millis() >= 1000 {
             break;
         }
         if before_signal.level != signal.level {
