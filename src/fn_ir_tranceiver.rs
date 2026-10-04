@@ -11,26 +11,19 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         Some(v) => v,
         None => return
     };
-    let range = 1..pattern.signals.len();
-    out_pin.set_low();
-    if first.level == PinLevel::High {
-        out_pin.set_high();
-        // thread::sleep(time::Duration::from_micros(9));
-        // out_pin.set_low();
+    // ピンの初期状態を設定する
+    match first.level {
+        PinLevel::High => out_pin.set_high(),
+        PinLevel::Low => out_pin.set_low()
     }
-
+    // 信号のパターンを出力する
+    let range = 1..pattern.signals.len();
     for i in range {
         let signal = &pattern.signals[i];
         let before = pattern.signals[i - 1].elapsed;
-        thread::sleep(signal.elapsed - before);
-        // if signal.level == PinLevel::High {
-        //     out_pin.set_high();
-        //     thread::sleep(time::Duration::from_micros(9));
-        //     out_pin.set_low();
-        // }
-        match signal.level {
-            PinLevel::High => out_pin.set_high(),
-            PinLevel::Low => out_pin.set_low()
+        let span = signal.elapsed - before;
+        if signal.level == PinLevel::High {
+            out_wave(&mut out_pin, &signal.level, &span);
         }
     }
     out_pin.set_low();
@@ -80,4 +73,25 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
 pub fn get_pin(num: u8) -> Result<gpio::Pin, gpio::Error> {
     let pin = gpio::Gpio::new()?.get(num)?;
     Ok(pin)
+}
+fn out_wave(pin: &mut gpio::OutputPin, level: &PinLevel, duration: &time::Duration) {
+    let mut total_nanos = 0;
+
+    while duration.as_nanos() > total_nanos {
+        match level {
+            PinLevel::High => {
+                pin.set_high();
+                thread::sleep(time::Duration::from_micros(9));
+                pin.set_low();
+                thread::sleep(time::Duration::from_micros(17));
+            },
+            PinLevel::Low => {
+                pin.set_low();
+                thread::sleep(time::Duration::from_micros(9));
+                pin.set_low();
+                thread::sleep(time::Duration::from_micros(17));
+            }
+        }
+        total_nanos += 9000;
+    }
 }
