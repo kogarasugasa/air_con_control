@@ -6,6 +6,10 @@ use crate::m_signal_pattern::SignalPattern;
 use crate::m_pin_level::PinLevel;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
+    let hz = 38000;
+    let hz_us = 1 / hz * 1000 * 1000;
+    let high_us = hz_us / 3; // 1 / 3 duty
+    let low_us = hz_us - high_us;
     let mut out_pin = pin.into_output();
     let first = match pattern.signals.first() {
         Some(v) => v,
@@ -25,13 +29,13 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
 
         match signal.level {
             PinLevel::High => {
-                let mut total_nanos = 0;
-                while span.as_nanos() > total_nanos {
+                let mut total_millis = 0;
+                while span.as_millis() > total_millis {
                     out_pin.set_high();
-                    thread::sleep(time::Duration::from_micros(9));
+                    thread::sleep(time::Duration::from_micros(high_us));
                     out_pin.set_low();
-                    thread::sleep(time::Duration::from_micros(17));
-                    total_nanos += 9000 + 17000;
+                    thread::sleep(time::Duration::from_micros(low_us));
+                    total_millis += hz_us as u128;
                 }
             },
             PinLevel::Low => thread::sleep(span)
