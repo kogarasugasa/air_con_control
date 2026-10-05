@@ -34,13 +34,16 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
                 let mut total_span = time::Duration::ZERO;
                 while span > total_span {
                     out_pin.set_high();
-                    thread::sleep(high_span);
+                    //thread::sleep(high_span);
+                    wait(high_span);
                     out_pin.set_low();
-                    thread::sleep(low_span);
+                    //thread::sleep(low_span);
+                    wait(low_span);
                     total_span += hz_span;
                 }
             },
-            PinLevel::Low => thread::sleep(span)
+            //PinLevel::Low => thread::sleep(span)
+            PinLevel::Low => wait(span)
         }
     }
     out_pin.set_low();
@@ -91,4 +94,8 @@ pub fn receive_pattern(pin: gpio::Pin) -> Vec<Signal> {
 pub fn get_pin(num: u8) -> Result<gpio::Pin, gpio::Error> {
     let pin = gpio::Gpio::new()?.get(num)?;
     Ok(pin)
+}
+pub fn wait(span: time::Duration) {
+    let start = time::Instant::now();
+    while (time::Instant::now() - start) <= span {}
 }
