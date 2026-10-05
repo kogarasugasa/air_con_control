@@ -178,7 +178,13 @@ fn ir_tranceiver(
             match profile {
                 Some(name) => {
                     let path = create_profile_path(root, name);
-                    let mut pattern = SignalPattern::read(&path).unwrap();
+                    let mut pattern = match SignalPattern::read(&path) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            println!("{}", e);
+                            return;
+                        }
+                    };
                     if is_reverse_phase {
                         pattern.reverse_phase();
                     }
