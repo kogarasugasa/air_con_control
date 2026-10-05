@@ -31,7 +31,7 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     for i in range {
         let signal = &pattern.signals[i];
         let next = pattern.signals[i + 1].elapsed;
-        let span = signal.elapsed - next;
+        let span = next - signal.elapsed;
 
         match signal.level {
             PinLevel::High => {
