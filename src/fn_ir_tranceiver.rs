@@ -23,11 +23,15 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
         PinLevel::Low => out_pin.set_low()
     }
     // 信号のパターンを出力する
-    let range = 1..pattern.signals.len();
+    let last_signal = match pattern.signals.last() {
+        Some(v) => v,
+        None => return
+    };
+    let range = 0..pattern.signals.len() - 1;
     for i in range {
         let signal = &pattern.signals[i];
-        let before = pattern.signals[i - 1].elapsed;
-        let span = signal.elapsed - before;
+        let next = pattern.signals[i + 1].elapsed;
+        let span = signal.elapsed - next;
 
         match signal.level {
             PinLevel::High => {
@@ -46,6 +50,11 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
             PinLevel::Low => wait(span)
         }
     }
+    match last_signal.level {
+        PinLevel::High => out_pin.set_high(),
+        PinLevel::Low => out_pin.set_low(),
+    }
+    thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
     println!("send_pattern() end")
 }
