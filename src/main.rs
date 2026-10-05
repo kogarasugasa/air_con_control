@@ -26,6 +26,7 @@ fn main() {
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
+    let profile_path = format!("{}/profiles", profile_path);
     let start_option = StartOption::new(std::env::args());
     println!("{:?}", start_option.get_operation());
     println!("{:?}", start_option.get_profile_name());
