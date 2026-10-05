@@ -11,6 +11,9 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let hz_span = time::Duration::from_secs_f64(1.0 / freq); // 1Hzの時間
     let high_span = hz_span.mul_f64(duty);
     let low_span = hz_span - high_span;
+println!("hz_span is {}", hz_span.as_micros());
+println!("high_span is {}", high_span.as_micros());
+println!("low_span is {}", &low_span.as_micros());
     
     let mut out_pin = pin.into_output();
     // 信号のパターンを出力する
