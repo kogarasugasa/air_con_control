@@ -13,15 +13,6 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let low_span = hz_span - high_span;
     
     let mut out_pin = pin.into_output();
-    let first = match pattern.signals.first() {
-        Some(v) => v,
-        None => return
-    };
-    // ピンの初期状態を設定する
-    match first.level {
-        PinLevel::High => out_pin.set_high(),
-        PinLevel::Low => out_pin.set_low()
-    }
     // 信号のパターンを出力する
     let last_signal = match pattern.signals.last() {
         Some(v) => v,
