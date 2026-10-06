@@ -1,3 +1,4 @@
+use std::ops::AddAssign;
 use std::{thread, time};
 use rppal::gpio::{self,};
 
@@ -6,6 +7,7 @@ use crate::m_signal_pattern::SignalPattern;
 use crate::m_pin_level::PinLevel;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
+    let pattern = normalize(pattern);
     let freq = 38000.0; // 38kHz
     let duty = 1.0 / 3.0;
     let hz_span = time::Duration::from_secs_f64(1.0 / freq); // 1Hzの時間
@@ -13,7 +15,7 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let low_span = hz_span - high_span;
 println!("hz_span is {}", hz_span.as_micros());
 println!("high_span is {}", high_span.as_micros());
-println!("low_span is {}", &low_span.as_micros());
+println!("low_span is {}", low_span.as_micros());
     
     let mut out_pin = pin.into_output();
     // 信号のパターンを出力する
@@ -102,3 +104,79 @@ pub fn wait(span: time::Duration) {
     let start = time::Instant::now();
     while (time::Instant::now() - start) <= span {}
 }
+// url https://elm-chan.org/docs/ir_format.html
+fn normalize(pattern: SignalPattern) -> SignalPattern {
+    let mut nomalized = vec![];
+    let mut format = None;
+    let mut total = time::Duration::ZERO;
+    for i in 0..(pattern.signals.len() -1) {
+        let cur = &pattern.signals[i];
+        let span = pattern.signals[i + 1].elapsed - cur.elapsed;
+        if 8992 - 100 <= span.as_micros()
+        && span.as_micros() <= 8992 + 100 {
+            if format.is_none() {
+                format = Some(SignalFormat::NEC);
+            }
+        }
+        else if 2400 - 100 <= span.as_micros()
+        && span.as_micros() <= 2400 + 100 {
+            if format.is_none() {
+                format = Some(SignalFormat::AEHA(38000, 425));
+            }
+        }
+        else if 2800 - 100 <= span.as_micros()
+        && span.as_micros() <= 4000 + 100 {
+            if format.is_none() {
+                format = Some(SignalFormat::SONY);
+            }
+        }
+        let format = match format.take() {
+            Some(v) => v,
+            None => {
+                total.add_assign(span);
+                let elapsed = total.clone();
+                let signal = Signal { level: cur.level.clone(), elapsed };
+                nomalized.push(signal);
+                continue;
+            }
+        };
+
+        match format {
+            SignalFormat::NEC => {
+                let signal_count = (span.as_micros() as f64 / 562.0).round();
+                let nomalized_span = time::Duration::from_micros(562)
+                    .mul_f64(signal_count);
+                total.add_assign(nomalized_span);
+                let elapsed = total.clone();
+                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
+                nomalized.push(signal);
+            },
+            SignalFormat::AEHA(_, _) => {
+                let signal_count = (span.as_micros() as f64 / 425.0).round();
+                let nomalized_span = time::Duration::from_micros(425)
+                    .mul_f64(signal_count);
+                total.add_assign(nomalized_span);
+                let elapsed = total.clone();
+                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
+                nomalized.push(signal);
+            },
+            SignalFormat::SONY => {
+                let signal_count = (span.as_micros() as f64 / 600.0).round();
+                let nomalized_span = time::Duration::from_micros(600)
+                    .mul_f64(signal_count);
+                total.add_assign(nomalized_span);
+                let elapsed = total.clone();
+                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
+                nomalized.push(signal);
+            }
+        }
+    }
+    SignalPattern { name: pattern.name, signals: nomalized }
+
+}
+enum SignalFormat {
+    NEC,
+    AEHA(u32, u32),
+    SONY,
+}
+
