@@ -5,51 +5,16 @@ use rppal::gpio::{self,};
 use crate::m_signal::Signal;
 use crate::m_signal_pattern::SignalPattern;
 use crate::m_pin_level::PinLevel;
+use crate::model::IrData;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
-    let pattern = normalize(pattern);
-    let freq = 38000.0; // 38kHz
+    //let pattern = normalize(pattern);
+    let freq = 38000; // 38kHz
     let duty = 1.0 / 3.0;
-    let hz_span = time::Duration::from_secs_f64(1.0 / freq); // 1Hzの時間
-    let high_span = hz_span.mul_f64(duty);
-    let low_span = hz_span - high_span;
-println!("hz_span is {}", hz_span.as_micros());
-println!("high_span is {}", high_span.as_micros());
-println!("low_span is {}", low_span.as_micros());
-    
+    let t = 425;
+    let ir_data = IrData::new(pattern, freq, duty, t);
     let mut out_pin = pin.into_output();
-    // 信号のパターンを出力する
-    let last_signal = match pattern.signals.last() {
-        Some(v) => v,
-        None => return
-    };
-    let range = 0..pattern.signals.len() - 1;
-    for i in range {
-        let signal = &pattern.signals[i];
-        let next = pattern.signals[i + 1].elapsed;
-        let span = next - signal.elapsed;
-
-        match signal.level {
-            PinLevel::High => {
-                let mut total_span = time::Duration::ZERO;
-                while span > total_span {
-                    out_pin.set_high();
-                    //thread::sleep(high_span);
-                    wait(high_span);
-                    out_pin.set_low();
-                    //thread::sleep(low_span);
-                    wait(low_span);
-                    total_span += hz_span;
-                }
-            },
-            //PinLevel::Low => thread::sleep(span)
-            PinLevel::Low => wait(span)
-        }
-    }
-    match last_signal.level {
-        PinLevel::High => out_pin.set_high(),
-        PinLevel::Low => out_pin.set_low(),
-    }
+    ir_data.play(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
     println!("send_pattern() end")

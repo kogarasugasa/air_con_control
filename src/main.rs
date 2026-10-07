@@ -1,5 +1,6 @@
 use rppal::gpio;
 
+mod model;
 mod m_signal;
 mod m_signal_pattern; use m_signal_pattern::SignalPattern;
 mod m_operation_type; use m_operation_type::OperationType;
