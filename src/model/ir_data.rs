@@ -21,6 +21,7 @@ impl IrData {
         duty: f64,
         t: u32
     ) -> Self {
+println!("z");
         let hz_span = Duration::from_secs_f64(1.0 / freq as f64);
         let hi_span = hz_span.div_f64(duty);
         let lo_span = hz_span - hi_span;
