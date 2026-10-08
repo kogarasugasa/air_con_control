@@ -63,6 +63,6 @@ impl IrData {
     }
     fn wait(span: Duration) {
         let start = Instant::now();
-        while (Instant::now() - start) <= span {}
+        while start.elapsed() <= span {}
     }
 }
