@@ -21,7 +21,6 @@ impl IrData {
         duty: f64,
         t: u32
     ) -> Self {
-println!("z");
         let hz_span = Duration::from_secs_f64(1.0 / freq as f64);
         let hi_span = hz_span.mul_f64(duty);
         let lo_span = hz_span - hi_span;
@@ -40,9 +39,7 @@ println!("z");
     pub fn to_bits(pattern: &Vec<Signal>, t: u32) -> Vec<PinLevel> {
         let mut bits = vec![];
         for p in pattern {
-println!("a");
             let bits_count = p.elapsed.as_nanos() / t as u128;
-println!("b");
             for _ in 0..bits_count {
                 bits.push(p.level.clone());
             }
@@ -66,7 +63,6 @@ println!("b");
     }
     fn wait(span: Duration) {
         let start = Instant::now();
-println!("koba1");
         while start.elapsed() <= span {}
     }
 }
