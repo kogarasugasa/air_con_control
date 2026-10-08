@@ -39,7 +39,9 @@ impl IrData {
     pub fn to_bits(pattern: &Vec<Signal>, t: u32) -> Vec<PinLevel> {
         let mut bits = vec![];
         for p in pattern {
+println!("a");
             let bits_count = p.elapsed.as_nanos() / t as u128;
+println!("b");
             for _ in 0..bits_count {
                 bits.push(p.level.clone());
             }
