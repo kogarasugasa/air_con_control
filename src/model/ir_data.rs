@@ -45,9 +45,11 @@ impl IrData {
             let span = nex.elapsed.as_micros() - cur.elapsed.as_micros();
             let bits_count = span / t_micros as u128;
             for _ in 0..bits_count {
-                bits.push(p.level.clone());
+                bits.push(cur.level.clone());
             }
         }
+        let last = pattern.iter().last().unwrap().level.clone();
+        bits.push(last);
         // for p in pattern {
         //     let bits_count = p.elapsed.as_micros() / t_micros as u128;
         //     for _ in 0..bits_count {
