@@ -23,7 +23,7 @@ impl IrData {
     ) -> Self {
 println!("z");
         let hz_span = Duration::from_secs_f64(1.0 / freq as f64);
-        let hi_span = hz_span.div_f64(duty);
+        let hi_span = hz_span.mul_f64(duty);
         let lo_span = hz_span - hi_span;
         let bits = Self::to_bits(&pattern.signals, t);
         Self {
