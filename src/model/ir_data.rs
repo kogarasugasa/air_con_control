@@ -39,7 +39,7 @@ impl IrData {
     pub fn to_bits(pattern: &Vec<Signal>, t: u32) -> Vec<PinLevel> {
         let mut bits = vec![];
         for p in pattern {
-            let bits_count = (p.elapsed.as_nanos() as f64 / t as f64).round() as u32;
+            let bits_count = p.elapsed.as_nanos() / t as u128;
             for _ in 0..bits_count {
                 bits.push(p.level.clone());
             }
@@ -63,6 +63,7 @@ impl IrData {
     }
     fn wait(span: Duration) {
         let start = Instant::now();
+println!("koba1");
         while start.elapsed() <= span {}
     }
 }
