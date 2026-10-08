@@ -1,3 +1,4 @@
+use std::ops::{Sub, SubAssign};
 use std::time::{Duration, Instant};
 use rppal::gpio::{OutputPin};
 
@@ -38,12 +39,21 @@ impl IrData {
     }
     pub fn to_bits(pattern: &Vec<Signal>, t_micros: u32) -> Vec<PinLevel> {
         let mut bits = vec![];
-        for p in pattern {
-            let bits_count = p.elapsed.as_micros() / t_micros as u128;
+        for i in 0..(pattern.len() - 1) {
+            let cur = &pattern[i];
+            let nex = &pattern[i + 1];
+            let span = nex.elapsed.as_micros() - cur.elapsed.as_micros();
+            let bits_count = span / t_micros as u128;
             for _ in 0..bits_count {
                 bits.push(p.level.clone());
             }
         }
+        // for p in pattern {
+        //     let bits_count = p.elapsed.as_micros() / t_micros as u128;
+        //     for _ in 0..bits_count {
+        //         bits.push(p.level.clone());
+        //     }
+        // }
         bits
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
