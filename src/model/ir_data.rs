@@ -9,7 +9,7 @@ pub struct IrData {
     pub bits: Vec<PinLevel>,
     freq: u32,
     duty: f64,
-    t: u32,
+    t_micros: u32,
     pub hz_span: Duration,
     pub hi_span: Duration,
     pub lo_span: Duration,
@@ -19,7 +19,7 @@ impl IrData {
         pattern: SignalPattern,
         freq: u32,
         duty: f64,
-        t: u32
+        t_micros: u32
     ) -> Self {
         let hz_span = Duration::from_secs_f64(1.0 / freq as f64);
         let hi_span = hz_span.mul_f64(duty);
@@ -30,16 +30,16 @@ impl IrData {
             bits,
             freq,
             duty,
-            t,
+            t_micros,
             hz_span,
             hi_span,
             lo_span,
         }
     }
-    pub fn to_bits(pattern: &Vec<Signal>, t: u32) -> Vec<PinLevel> {
+    pub fn to_bits(pattern: &Vec<Signal>, t_micros: u32) -> Vec<PinLevel> {
         let mut bits = vec![];
         for p in pattern {
-            let bits_count = p.elapsed.as_nanos() / t as u128;
+            let bits_count = p.elapsed.as_micros() / t_micros as u128;
             for _ in 0..bits_count {
                 bits.push(p.level.clone());
             }
