@@ -53,6 +53,7 @@ impl IrData {
         bits
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
+println!("bits.len() is {}", self.bits.len());
         for level in &self.bits {
             match level {
                 PinLevel::High => {
