@@ -11,8 +11,8 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     //let pattern = normalize(pattern);
     let freq = 38000; // 38kHz
     let duty = 1.0 / 3.0;
-    let t = 425;
-    let ir_data = IrData::new(pattern, freq, duty, t);
+    let t_micros = 425;
+    let ir_data = IrData::new(pattern, freq, duty, t_micros);
     let mut out_pin = pin.into_output();
     ir_data.play(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
