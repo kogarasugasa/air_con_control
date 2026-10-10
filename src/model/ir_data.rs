@@ -57,7 +57,7 @@ impl IrData {
             match level {
                 PinLevel::High => {
                     out_pin.set_high();
-                    Self::wait(self.hz_span);
+                    std::thread::sleep(self.hz_span);
                     // out_pin.set_high();
                     // Self::wait(self.hi_span);
                     // out_pin.set_low();
