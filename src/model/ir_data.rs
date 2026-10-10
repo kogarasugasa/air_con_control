@@ -50,23 +50,18 @@ impl IrData {
         }
         let last = pattern.iter().last().unwrap().level.clone();
         bits.push(last);
-        // for p in pattern {
-        //     let bits_count = p.elapsed.as_micros() / t_micros as u128;
-        //     for _ in 0..bits_count {
-        //         bits.push(p.level.clone());
-        //     }
-        // }
         bits
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
-println!("len is {}", self.bits.len());
         for level in &self.bits {
             match level {
                 PinLevel::High => {
                     out_pin.set_high();
-                    Self::wait(self.hi_span);
-                    out_pin.set_low();
-                    Self::wait(self.lo_span);
+                    Self::wait(self.hz_span);
+                    // out_pin.set_high();
+                    // Self::wait(self.hi_span);
+                    // out_pin.set_low();
+                    // Self::wait(self.lo_span);
                 },
                 PinLevel::Low => {
                     Self::wait(self.hz_span);
