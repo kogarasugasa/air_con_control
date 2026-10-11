@@ -12,9 +12,25 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let freq = 38000; // 38kHz
     let duty = 1.0 / 3.0;
     let t_micros = 425;
+    let bits = IrData::to_bits(&pattern.signals, t_micros);
     let ir_data = IrData::new(pattern, freq, duty, t_micros);
     let mut out_pin = pin.into_output();
-    ir_data.play(&mut out_pin);
+    //
+    for bit in bits {
+        if bit == PinLevel::High {
+            if let Err(e) = out_pin.set_pwm_frequency(freq as f64, duty) {
+                println!("{}", e);
+            };
+        }
+        else {
+            if let Err(e) = out_pin.clear_pwm() {
+                println!("{}", e);
+            };
+        }
+        
+    }
+    //
+    //ir_data.play(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
     println!("send_pattern() end")
