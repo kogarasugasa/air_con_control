@@ -65,6 +65,7 @@ println!("bits.len() is {}", self.bits.len());
                     // Self::wait(self.lo_span);
                 },
                 PinLevel::Low => {
+                    out_pin.set_low();
                     Self::wait(self.hz_span);
                 }
             }
