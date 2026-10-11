@@ -18,14 +18,16 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     //
     for bit in bits {
         if bit == PinLevel::High {
-            if let Err(e) = out_pin.set_pwm_frequency(freq as f64, duty) {
-                println!("{}", e);
-            };
+            out_pin.set_high();
+            // if let Err(e) = out_pin.set_pwm_frequency(freq as f64, duty) {
+            //     println!("{}", e);
+            // };
         }
         else {
-            if let Err(e) = out_pin.clear_pwm() {
-                println!("{}", e);
-            };
+            out_pin.set_low();
+            // if let Err(e) = out_pin.clear_pwm() {
+            //     println!("{}", e);
+            // };
         }
         
     }
