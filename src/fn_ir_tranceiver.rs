@@ -19,12 +19,14 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     for bit in bits {
         if bit == PinLevel::High {
             out_pin.set_high();
+            std::thread::sleep(std::time::Duration::from_micros(425));
             // if let Err(e) = out_pin.set_pwm_frequency(freq as f64, duty) {
             //     println!("{}", e);
             // };
         }
         else {
             out_pin.set_low();
+            std::thread::sleep(std::time::Duration::from_micros(425));
             // if let Err(e) = out_pin.clear_pwm() {
             //     println!("{}", e);
             // };
