@@ -22,7 +22,7 @@ mod fn_ir_tranceiver; use fn_ir_tranceiver::{
 //mod lcd; use lcd::display;
 
 fn main() {
-    sensor();
+    // sensor();
     //display();
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
@@ -68,6 +68,7 @@ fn main() {
         );
         return;
     }
+    return;
     let ope_send_btn = Button {
         pin: ButtonPinNumber::Button1.get_pin(),
         on_level: gpio::Level::Low,

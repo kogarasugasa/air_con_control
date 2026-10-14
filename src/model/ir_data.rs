@@ -53,16 +53,13 @@ impl IrData {
         bits
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
-println!("bits.len() is {}", self.bits.len());
         for level in &self.bits {
             match level {
                 PinLevel::High => {
                     out_pin.set_high();
-                    std::thread::sleep(self.hz_span);
-                    // out_pin.set_high();
-                    // Self::wait(self.hi_span);
-                    // out_pin.set_low();
-                    // Self::wait(self.lo_span);
+                    Self::wait(self.hi_span);
+                    out_pin.set_low();
+                    Self::wait(self.lo_span);
                 },
                 PinLevel::Low => {
                     out_pin.set_low();
