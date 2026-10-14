@@ -65,7 +65,6 @@ fn main() {
         profile_name.clone(),
         &profile_path
     );
-    println!("end");
     return;
     let ope_send_btn = Button {
         pin: ButtonPinNumber::Button1.get_pin(),

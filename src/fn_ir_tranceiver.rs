@@ -8,31 +8,11 @@ use crate::m_pin_level::PinLevel;
 use crate::model::IrData;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
-    //let pattern = normalize(pattern);
     let freq = 38000; // 38kHz
     let duty = 1.0 / 3.0;
     let t_micros = 425;
-    let bits = IrData::to_bits(&pattern.signals, t_micros);
     let ir_data = IrData::new(pattern, freq, duty, t_micros);
     let mut out_pin = pin.into_output();
-    //
-    // for bit in bits {
-    //     if bit == PinLevel::High {
-    //         //out_pin.set_high();
-    //         std::thread::sleep(std::time::Duration::from_micros(425));
-    //         // if let Err(e) = out_pin.set_pwm_frequency(freq as f64, duty) {
-    //         //     println!("{}", e);
-    //         // };
-    //     }
-    //     else {
-    //         out_pin.set_low();
-    //         //std::thread::sleep(std::time::Duration::from_micros(425));
-    //         // if let Err(e) = out_pin.clear_pwm() {
-    //         //     println!("{}", e);
-    //         // };
-    //     }
-    // }
-    //
     ir_data.play(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
