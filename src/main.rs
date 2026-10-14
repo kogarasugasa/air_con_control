@@ -60,12 +60,14 @@ fn main() {
     ;
     // 実行
     if start_option.is_some() {
+        println!("execute");
         ir_tranceiver(
             operation,
             is_reverse_phase.unwrap_or(false),
             profile_name.clone(),
             &profile_path
         );
+        println!("end");
         return;
     }
     return;
