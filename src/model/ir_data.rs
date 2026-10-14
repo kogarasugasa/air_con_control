@@ -58,9 +58,10 @@ impl IrData {
             match level {
                 PinLevel::High => {
                     out_pin.set_high();
-                    Self::wait(self.hi_span);
-                    out_pin.set_low();
-                    Self::wait(self.lo_span);
+                    Self::wait(self.hz_span);
+                    // Self::wait(self.hi_span);
+                    // out_pin.set_low();
+                    // Self::wait(self.lo_span);
                 },
                 PinLevel::Low => {
                     out_pin.set_low();
