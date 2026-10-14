@@ -59,17 +59,13 @@ fn main() {
         .or_else(|| get_is_reverse_phase_from_cli())
     ;
     // 実行
-    if start_option.is_some() {
-        println!("execute");
-        ir_tranceiver(
-            operation,
-            is_reverse_phase.unwrap_or(false),
-            profile_name.clone(),
-            &profile_path
-        );
-        println!("end");
-        return;
-    }
+    ir_tranceiver(
+        operation,
+        is_reverse_phase.unwrap_or(false),
+        profile_name.clone(),
+        &profile_path
+    );
+    println!("end");
     return;
     let ope_send_btn = Button {
         pin: ButtonPinNumber::Button1.get_pin(),
