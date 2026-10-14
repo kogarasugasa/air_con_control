@@ -155,6 +155,10 @@ fn ir_tranceiver(
     profile_name: String,
     root: &str
 ) {
+    println!(
+        "execute operation: {} / profile: {} / reverse phase: {}",
+        operation, profile_name, is_reverse_phase
+    );
     match operation {
         OperationType::Receive => {
             println!("receive opetation");
