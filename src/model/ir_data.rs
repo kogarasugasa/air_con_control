@@ -58,6 +58,7 @@ impl IrData {
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
         println!("self.bits.len() is {}", self.bits.len());
+        let before = std::time::Instant::now();
         for level in &self.bits {
             match level {
                 PinLevel::High => {
@@ -73,18 +74,19 @@ impl IrData {
                 }
             }
         }
+        println!("send elepsed is {:?}", before.elapsed());
     }
     pub fn play2(&self, out_pin: &mut OutputPin) {
         let before = std::time::Instant::now();
         for sig in &self.pattern.signals {
             match sig.level {
                 PinLevel::High => {
-                    out_pin.set_high();
                     Self::wait2(sig.elapsed, before);
+                    out_pin.set_high();
                 },
                 PinLevel::Low => {
-                    out_pin.set_low();
                     Self::wait2(sig.elapsed, before);
+                    out_pin.set_low();
                 }
             }
         }
