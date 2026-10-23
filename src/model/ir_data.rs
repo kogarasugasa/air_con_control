@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::{ops::Div, time::{Duration, Instant}};
 use rppal::gpio::{OutputPin};
 
 use crate::model::{
@@ -13,7 +13,7 @@ pub struct IrData {
     freq: u32,
     duty: f64,
     t_micros: u32,
-    t_duration: Duration,
+    t_span: Duration,
     pub hz_span: Duration,
     pub hi_span: Duration,
     pub lo_span: Duration,
@@ -36,7 +36,7 @@ impl IrData {
             freq,
             duty,
             t_micros,
-            t_duration: Duration::from_micros(t_micros as u64),
+            t_span: Duration::from_micros(t_micros as u64),
             hz_span,
             hi_span,
             lo_span,
@@ -63,26 +63,21 @@ impl IrData {
         println!("calc total elepsed is {}",
             self.hz_span.as_micros() * self.bits.len() as u128
         );
+        let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
         let before = std::time::Instant::now();
         for level in &self.bits {
             match level {
                 PinLevel::High => {
-                    if let Err(e) = out_pin.set_pwm_frequency(self.freq as f64, self.duty) {
-                        println!("{}", e);
-                        return;
-                    };
-                    Self::wait(self.t_duration);
-                    // out_pin.set_high();
-                    // Self::wait(self.hz_span);
-                    // Self::wait(self.hi_span);
-                    // out_pin.set_low();
-                    // Self::wait(self.lo_span);
+                    for _ in 0..t_span_count {
+                        out_pin.set_high();
+                        Self::wait(self.hi_span);
+                        out_pin.set_low();
+                        Self::wait(self.lo_span);
+                    }
                 },
                 PinLevel::Low => {
-                    out_pin.clear_pwm();
-                    Self::wait(self.t_duration);
-                    // out_pin.set_low();
-                    // Self::wait(self.hz_span);
+                    out_pin.set_low();
+                    Self::wait(self.t_span);
                 }
             }
         }
