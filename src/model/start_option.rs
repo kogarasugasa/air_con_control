@@ -1,5 +1,6 @@
 use std::env;
-use crate::m_operation_type::OperationType;
+
+use crate::model::operation_type::OperationType;
 
 pub struct StartOption {
     pub args: Vec<String>,

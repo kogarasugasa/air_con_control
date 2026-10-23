@@ -2,10 +2,10 @@ use std::ops::AddAssign;
 use std::{thread, time};
 use rppal::gpio::{self,};
 
-use crate::m_signal::Signal;
 use crate::m_signal_pattern::SignalPattern;
 use crate::m_pin_level::PinLevel;
-use crate::model::IrData;
+use crate::model::signal::Signal;
+use crate::model::ir_data::IrData;
 
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let freq = 38000; // 38kHz

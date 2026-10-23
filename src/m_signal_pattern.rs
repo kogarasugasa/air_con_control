@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 
-use crate::{m_pin_level::PinLevel, m_signal::Signal};
+use crate::{m_pin_level::PinLevel};
+use crate::model::signal::Signal;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SignalPattern {

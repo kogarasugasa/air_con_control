@@ -1,25 +1,26 @@
+use serde_json::to_string;
 use rppal::gpio;
 
-mod model;
-mod m_signal;
-mod m_signal_pattern; use m_signal_pattern::SignalPattern;
-mod m_operation_type; use m_operation_type::OperationType;
+use air_con_control::model::start_option::StartOption;
+use air_con_control::model::operation_type::OperationType;
+use air_con_control::model::button_pin_number::ButtonPinNumber;
+
+use air_con_control::m_signal_pattern::SignalPattern;
 mod m_pin_level;
-mod m_start_option; use m_start_option::StartOption;
-mod im_signal_pattern_store;
-mod fn_find_profile_names; use fn_find_profile_names::find_profile_names;
-mod temperature; use serde_json::to_string;
-use temperature::sensor;
-mod m_button; use m_button::{Button, ButtonPinNumber};
-mod fn_cli; use fn_cli::{
+
+use air_con_control::fn_find_profile_names::find_profile_names;
+
+use air_con_control::temperature::sensor;
+use air_con_control::m_button::Button;
+use air_con_control::fn_cli::{
     get_operation_type_from_cli, get_profile_name_from_cli,
     get_is_reverse_phase_from_cli,
 };
-mod fn_create_profile_path; use fn_create_profile_path::create_profile_path;
-mod fn_ir_tranceiver; use fn_ir_tranceiver::{
+use air_con_control::fn_create_profile_path::create_profile_path;
+use air_con_control::fn_ir_tranceiver::{
     send_pattern, receive_pattern, get_pin
 };
-//mod lcd; use lcd::display;
+// mod lcd; use lcd::display;
 
 fn main() {
     // sensor();

@@ -2,9 +2,10 @@ use std::ops::{Sub, SubAssign};
 use std::time::{Duration, Instant};
 use rppal::gpio::{OutputPin};
 
+use crate::model::signal::Signal;
 use crate::m_pin_level::PinLevel;
 use crate::m_signal_pattern::SignalPattern;
-use crate::m_signal::Signal;
+
 pub struct IrData {
     pub name: String,
     pub bits: Vec<PinLevel>,

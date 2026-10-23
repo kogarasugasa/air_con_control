@@ -1,4 +1,4 @@
-use crate::m_operation_type::OperationType;
+use crate::model::operation_type::OperationType;
 
 pub fn get_operation_type_from_cli() -> Option<OperationType> {
     let mut input = String::new();
