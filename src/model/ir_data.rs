@@ -1,4 +1,4 @@
-use std::{ops::Div, time::{Duration, Instant}};
+use std::{ops::{Add, Div}, time::{Duration, Instant}};
 use rppal::gpio::{OutputPin};
 
 use crate::model::{
@@ -60,24 +60,36 @@ impl IrData {
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
         println!("self.bits.len() is {}", self.bits.len());
-        println!("calc total elepsed is {}",
-            self.hz_span.as_micros() * self.bits.len() as u128
-        );
+        let freq = self.freq as f64;
+        let duty = self.duty as f64;
+        let before = Instant::now();
+        let mut cur = Duration::from_micros(self.t_micros as u64);
         let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
         let before = std::time::Instant::now();
         for level in &self.bits {
+            cur = cur.add(self.t_span);
             match level {
                 PinLevel::High => {
-                    for _ in 0..t_span_count {
-                        out_pin.set_high();
-                        Self::wait(self.hi_span);
-                        out_pin.set_low();
-                        Self::wait(self.lo_span);
-                    }
+                    if let Err(e) = out_pin.set_pwm_frequency(freq, duty) {
+                        println!("{e}");
+                        break;
+                    };
+                    // for _ in 0..t_span_count {
+                    //     out_pin.set_high();
+                    //     Self::wait(self.hi_span);
+                    //     out_pin.set_low();
+                    //     Self::wait(self.lo_span);
+                    // }
+                    Self::wait2(cur, before);
                 },
                 PinLevel::Low => {
-                    out_pin.set_low();
-                    Self::wait(self.t_span);
+                    // out_pin.set_low();
+                    // Self::wait(self.t_span);
+                    if let Err(e) = out_pin.clear_pwm() {
+                        println!("{e}");
+                        break;
+                    };
+                    Self::wait2(cur, before);
                 }
             }
         }
