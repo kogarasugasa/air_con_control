@@ -75,6 +75,7 @@ impl IrData {
         }
     }
     pub fn play2(&self, out_pin: &mut OutputPin) {
+        let before = std::time::Instant::now();
         for sig in &self.pattern.signals {
             match sig.level {
                 PinLevel::High => {
@@ -85,6 +86,7 @@ impl IrData {
                 }
             }
         }
+        println!("send elepsed is {:?}", before.elapsed());
     }
     fn wait(span: Duration) {
         let start = Instant::now();
