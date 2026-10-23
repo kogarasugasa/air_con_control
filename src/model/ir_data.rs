@@ -13,6 +13,7 @@ pub struct IrData {
     freq: u32,
     duty: f64,
     t_micros: u32,
+    t_duration: Duration,
     pub hz_span: Duration,
     pub hi_span: Duration,
     pub lo_span: Duration,
@@ -35,6 +36,7 @@ impl IrData {
             freq,
             duty,
             t_micros,
+            t_duration: Duration::from_micros(t_micros as u64),
             hz_span,
             hi_span,
             lo_span,
@@ -65,15 +67,22 @@ impl IrData {
         for level in &self.bits {
             match level {
                 PinLevel::High => {
-                    out_pin.set_high();
-                    Self::wait(self.hz_span);
+                    if let Err(e) = out_pin.set_pwm_frequency(self.freq as f64, self.duty) {
+                        println!("{}", e);
+                        return;
+                    };
+                    Self::wait(self.t_duration);
+                    // out_pin.set_high();
+                    // Self::wait(self.hz_span);
                     // Self::wait(self.hi_span);
                     // out_pin.set_low();
                     // Self::wait(self.lo_span);
                 },
                 PinLevel::Low => {
-                    out_pin.set_low();
-                    Self::wait(self.hz_span);
+                    out_pin.clear_pwm();
+                    Self::wait(self.t_duration);
+                    // out_pin.set_low();
+                    // Self::wait(self.hz_span);
                 }
             }
         }
