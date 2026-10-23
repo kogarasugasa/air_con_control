@@ -58,6 +58,9 @@ impl IrData {
     }
     pub fn play(&self, out_pin: &mut OutputPin) {
         println!("self.bits.len() is {}", self.bits.len());
+        println!("calc total elepsed is {}",
+            self.hz_span.as_micros() * self.bits.len() as u128
+        );
         let before = std::time::Instant::now();
         for level in &self.bits {
             match level {
