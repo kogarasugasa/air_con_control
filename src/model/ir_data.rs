@@ -1,10 +1,11 @@
-use std::ops::{Sub, SubAssign};
 use std::time::{Duration, Instant};
 use rppal::gpio::{OutputPin};
 
-use crate::model::signal::Signal;
-use crate::m_pin_level::PinLevel;
-use crate::m_signal_pattern::SignalPattern;
+use crate::model::{
+    signal::Signal,
+    signal_pattern::SignalPattern,
+    pin_level::PinLevel,
+};
 
 pub struct IrData {
     pub name: String,
@@ -15,6 +16,7 @@ pub struct IrData {
     pub hz_span: Duration,
     pub hi_span: Duration,
     pub lo_span: Duration,
+    pattern: SignalPattern,
 }
 impl IrData {
     pub fn new(
@@ -28,7 +30,7 @@ impl IrData {
         let lo_span = hz_span - hi_span;
         let bits = Self::to_bits(&pattern.signals, t_micros);
         Self {
-            name: pattern.name,
+            name: pattern.name.clone(),
             bits,
             freq,
             duty,
@@ -36,6 +38,7 @@ impl IrData {
             hz_span,
             hi_span,
             lo_span,
+            pattern,
         }
     }
     pub fn to_bits(pattern: &Vec<Signal>, t_micros: u32) -> Vec<PinLevel> {
@@ -67,6 +70,18 @@ impl IrData {
                 PinLevel::Low => {
                     out_pin.set_low();
                     Self::wait(self.hz_span);
+                }
+            }
+        }
+    }
+    pub fn play2(&self, out_pin: &mut OutputPin) {
+        for sig in &self.pattern.signals {
+            match sig.level {
+                PinLevel::High => {
+                    out_pin.set_high();
+                },
+                PinLevel::Low => {
+                    out_pin.set_low();
                 }
             }
         }

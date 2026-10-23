@@ -1,30 +1,25 @@
-use serde_json::to_string;
 use rppal::gpio;
 
-use air_con_control::model::start_option::StartOption;
-use air_con_control::model::operation_type::OperationType;
-use air_con_control::model::button_pin_number::ButtonPinNumber;
-
-use air_con_control::m_signal_pattern::SignalPattern;
-mod m_pin_level;
+use air_con_control::model::{
+    button::Button,
+    button_pin_number::ButtonPinNumber,
+    start_option::StartOption,
+    operation_type::OperationType,
+    signal_pattern::SignalPattern,
+};
 
 use air_con_control::fn_find_profile_names::find_profile_names;
-
-use air_con_control::temperature::sensor;
-use air_con_control::m_button::Button;
 use air_con_control::fn_cli::{
-    get_operation_type_from_cli, get_profile_name_from_cli,
+    get_operation_type_from_cli,
+    get_profile_name_from_cli,
     get_is_reverse_phase_from_cli,
 };
 use air_con_control::fn_create_profile_path::create_profile_path;
 use air_con_control::fn_ir_tranceiver::{
     send_pattern, receive_pattern, get_pin
 };
-// mod lcd; use lcd::display;
 
 fn main() {
-    // sensor();
-    //display();
     let profile_path = std::env::current_dir();
     let profile_path = profile_path.unwrap();
     let profile_path = profile_path.to_string_lossy();
