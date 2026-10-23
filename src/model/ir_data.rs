@@ -80,9 +80,11 @@ impl IrData {
             match sig.level {
                 PinLevel::High => {
                     out_pin.set_high();
+                    Self::wait2(sig.elapsed, before);
                 },
                 PinLevel::Low => {
                     out_pin.set_low();
+                    Self::wait2(sig.elapsed, before);
                 }
             }
         }
@@ -91,5 +93,8 @@ impl IrData {
     fn wait(span: Duration) {
         let start = Instant::now();
         while start.elapsed() <= span {}
+    }
+    fn wait2(record_elapsed: Duration, current: Instant) {
+        while record_elapsed >= current.elapsed() {}
     }
 }
