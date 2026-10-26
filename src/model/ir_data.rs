@@ -81,9 +81,7 @@ impl IrData {
                 }
             }
         }
-        if let Err(e) = out_pin.clear_pwm() {
-            println!("{e}");
-        };
+        out_pin.set_low();
         println!("send elepsed is {:?}", before.elapsed());
     }
     pub fn play_pwm(&self, out_pin: &mut OutputPin) {
@@ -132,6 +130,7 @@ impl IrData {
                 }
             }
         }
+        out_pin.set_low();
         println!("send elepsed is {:?}", before.elapsed());
     }
     fn wait_inc(span: Duration) {

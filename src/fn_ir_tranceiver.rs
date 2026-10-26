@@ -14,10 +14,13 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let t_micros = 425;
     let ir_data = IrData::new(pattern, freq, duty, t_micros);
     let mut out_pin = pin.into_output();
-    ir_data.play(&mut out_pin);
+    ir_data.play_nomalize(&mut out_pin);
     thread::sleep(time::Duration::from_millis(500));
     out_pin.set_low();
-    ir_data.play2(&mut out_pin);
+    ir_data.play_pwm(&mut out_pin);
+    thread::sleep(time::Duration::from_millis(500));
+    out_pin.set_low();
+    ir_data.play_origin(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
     println!("send_pattern() end")
