@@ -58,14 +58,41 @@ impl IrData {
         bits.push(last);
         bits
     }
-    pub fn play(&self, out_pin: &mut OutputPin) {
+    pub fn play_nomalize(&self, out_pin: &mut OutputPin) {
+        println!("play_nomalize");
+        println!("self.bits.len() is {}", self.bits.len());
+        let mut cur = Duration::from_micros(self.t_micros as u64);
+        let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
+        let before = Instant::now();
+        for level in &self.bits {
+            cur = cur.add(self.t_span);
+            match level {
+                PinLevel::High => {
+                    for _ in 0..t_span_count {
+                        out_pin.set_high();
+                        Self::wait_inc(self.hi_span);
+                        out_pin.set_low();
+                        Self::wait_inc(self.lo_span);
+                    }
+                },
+                PinLevel::Low => {
+                    out_pin.set_low();
+                    Self::wait_inc(self.t_span);
+                }
+            }
+        }
+        if let Err(e) = out_pin.clear_pwm() {
+            println!("{e}");
+        };
+        println!("send elepsed is {:?}", before.elapsed());
+    }
+    pub fn play_pwm(&self, out_pin: &mut OutputPin) {
+        println!("play_pwm");
         println!("self.bits.len() is {}", self.bits.len());
         let freq = self.freq as f64;
         let duty = self.duty as f64;
-        let before = Instant::now();
         let mut cur = Duration::from_micros(self.t_micros as u64);
-        let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
-        let before = std::time::Instant::now();
+        let before = Instant::now();
         for level in &self.bits {
             cur = cur.add(self.t_span);
             match level {
@@ -74,48 +101,44 @@ impl IrData {
                         println!("{e}");
                         break;
                     };
-                    // for _ in 0..t_span_count {
-                    //     out_pin.set_high();
-                    //     Self::wait(self.hi_span);
-                    //     out_pin.set_low();
-                    //     Self::wait(self.lo_span);
-                    // }
-                    Self::wait2(cur, before);
+                    Self::wait_abs(cur, before);
                 },
                 PinLevel::Low => {
-                    // out_pin.set_low();
-                    // Self::wait(self.t_span);
                     if let Err(e) = out_pin.clear_pwm() {
                         println!("{e}");
                         break;
                     };
-                    Self::wait2(cur, before);
+                    Self::wait_abs(cur, before);
                 }
             }
         }
+        if let Err(e) = out_pin.clear_pwm() {
+            println!("{e}");
+        };
         println!("send elepsed is {:?}", before.elapsed());
     }
-    pub fn play2(&self, out_pin: &mut OutputPin) {
+    pub fn play_origin(&self, out_pin: &mut OutputPin) {
+        println!("play_origin");
         let before = std::time::Instant::now();
         for sig in &self.pattern.signals {
             match sig.level {
                 PinLevel::High => {
-                    Self::wait2(sig.elapsed, before);
+                    Self::wait_abs(sig.elapsed, before);
                     out_pin.set_high();
                 },
                 PinLevel::Low => {
-                    Self::wait2(sig.elapsed, before);
+                    Self::wait_abs(sig.elapsed, before);
                     out_pin.set_low();
                 }
             }
         }
         println!("send elepsed is {:?}", before.elapsed());
     }
-    fn wait(span: Duration) {
+    fn wait_inc(span: Duration) {
         let start = Instant::now();
         while start.elapsed() <= span {}
     }
-    fn wait2(record_elapsed: Duration, current: Instant) {
+    fn wait_abs(record_elapsed: Duration, current: Instant) {
         while record_elapsed >= current.elapsed() {}
     }
 }
