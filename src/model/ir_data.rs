@@ -98,27 +98,42 @@ impl IrData {
         let duty = self.duty as f64;
         let mut cur = self.t_span.clone();
         let before = Instant::now();
+        let channel = rppal::pwm::Channel::Pwm1;
+        let pwm = match rppal::pwm::Pwm::new(channel) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{e:?}");
+                return;
+            }
+        };
+        if let Err(e) = pwm.set_frequency(freq, duty) {
+            eprintln!("{e:?}");
+            return;
+        }
         for level in &self.bits {
             cur = cur.add(self.t_span);
             match level {
                 PinLevel::High => {
-                    if let Err(e) = out_pin.set_pwm_frequency(freq, duty) {
-                        println!("{e}");
+                    //if let Err(e) = out_pin.set_pwm_frequency(freq, duty) {
+                    if let Err(e) = pwm.enable() {
+                        eprintln!("{e}");
                         break;
                     };
                     Self::wait_abs(cur, before);
                 },
                 PinLevel::Low => {
-                    if let Err(e) = out_pin.clear_pwm() {
-                        println!("{e}");
+                    //if let Err(e) = out_pin.clear_pwm() {
+                    if let Err(e) = pwm.disable() {
+                        eprintln!("{e}");
                         break;
                     };
                     Self::wait_abs(cur, before);
                 }
             }
         }
-        if let Err(e) = out_pin.clear_pwm() {
-            println!("{e}");
+        //if let Err(e) = out_pin.clear_pwm() {
+        if let Err(e) = pwm.disable() {
+            eprintln!("{e:?}");
         };
         println!("send elepsed is {:?}", before.elapsed());
         Self::wait_inc(self.trailer_span);
