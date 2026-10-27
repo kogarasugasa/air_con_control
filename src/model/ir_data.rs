@@ -1,4 +1,4 @@
-use std::{ops::{Add, Div}, time::{Duration, Instant}};
+use std::{ops::Add, time::{Duration, Instant}};
 use rppal::gpio::{OutputPin};
 
 use crate::model::{
@@ -62,6 +62,11 @@ impl IrData {
     pub fn play_nomalize(&self, out_pin: &mut OutputPin) {
         println!("play_nomalize");
         println!("self.bits.len() is {}", self.bits.len());
+        println!("hz_span is {}, hi_span is {}, lo_span is {}",
+            self.hz_span.as_micros(),
+            self.hi_span.as_micros(),
+            self.lo_span.as_micros(),
+        );
         let mut cur = self.t_span.clone();
         let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
         let before = Instant::now();
@@ -83,8 +88,8 @@ impl IrData {
             }
         }
         out_pin.set_low();
-        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
+        Self::wait_inc(self.trailer_span);
     }
     pub fn play_pwm(&self, out_pin: &mut OutputPin) {
         println!("play_pwm");
@@ -115,8 +120,8 @@ impl IrData {
         if let Err(e) = out_pin.clear_pwm() {
             println!("{e}");
         };
-        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
+        Self::wait_inc(self.trailer_span);
     }
     pub fn play_origin(&self, out_pin: &mut OutputPin) {
         println!("play_origin");
@@ -134,8 +139,8 @@ impl IrData {
             }
         }
         out_pin.set_low();
-        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
+        Self::wait_inc(self.trailer_span);
     }
     fn wait_inc(span: Duration) {
         let start = Instant::now();

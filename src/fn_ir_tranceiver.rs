@@ -1,4 +1,3 @@
-use std::ops::AddAssign;
 use std::{thread, time};
 use rppal::gpio::{self,};
 
