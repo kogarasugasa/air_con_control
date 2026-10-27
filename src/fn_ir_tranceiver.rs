@@ -11,7 +11,7 @@ use crate::model::{
 pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     let freq = 38000.0; // 38kHz
     let duty = 1.0 / 3.0;
-    let t_micros = 420;
+    let t_micros = 421;
     let trailer_millis = 8;
     let ir_data = IrData::new(pattern, freq, duty, t_micros, trailer_millis);
     let mut out_pin = pin.into_output();
@@ -76,79 +76,3 @@ pub fn wait(span: time::Duration) {
     let start = time::Instant::now();
     while (time::Instant::now() - start) <= span {}
 }
-// url https://elm-chan.org/docs/ir_format.html
-fn normalize(pattern: SignalPattern) -> SignalPattern {
-    let mut nomalized = vec![];
-    let mut format = None;
-    let mut total = time::Duration::ZERO;
-    for i in 0..(pattern.signals.len() -1) {
-        let cur = &pattern.signals[i];
-        let span = pattern.signals[i + 1].elapsed - cur.elapsed;
-        if 8992 - 100 <= span.as_micros()
-        && span.as_micros() <= 8992 + 100 {
-            if format.is_none() {
-                format = Some(SignalFormat::NEC);
-            }
-        }
-        else if 2400 - 100 <= span.as_micros()
-        && span.as_micros() <= 2400 + 100 {
-            if format.is_none() {
-                format = Some(SignalFormat::AEHA(38000, 425));
-            }
-        }
-        else if 2800 - 100 <= span.as_micros()
-        && span.as_micros() <= 4000 + 100 {
-            if format.is_none() {
-                format = Some(SignalFormat::SONY);
-            }
-        }
-        let format = match format.take() {
-            Some(v) => v,
-            None => {
-                total.add_assign(span);
-                let elapsed = total.clone();
-                let signal = Signal { level: cur.level.clone(), elapsed };
-                nomalized.push(signal);
-                continue;
-            }
-        };
-
-        match format {
-            SignalFormat::NEC => {
-                let signal_count = (span.as_micros() as f64 / 562.0).round();
-                let nomalized_span = time::Duration::from_micros(562)
-                    .mul_f64(signal_count);
-                total.add_assign(nomalized_span);
-                let elapsed = total.clone();
-                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
-                nomalized.push(signal);
-            },
-            SignalFormat::AEHA(_, _) => {
-                let signal_count = (span.as_micros() as f64 / 425.0).round();
-                let nomalized_span = time::Duration::from_micros(425)
-                    .mul_f64(signal_count);
-                total.add_assign(nomalized_span);
-                let elapsed = total.clone();
-                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
-                nomalized.push(signal);
-            },
-            SignalFormat::SONY => {
-                let signal_count = (span.as_micros() as f64 / 600.0).round();
-                let nomalized_span = time::Duration::from_micros(600)
-                    .mul_f64(signal_count);
-                total.add_assign(nomalized_span);
-                let elapsed = total.clone();
-                let signal = Signal { level: cur.level.clone(), elapsed: elapsed };
-                nomalized.push(signal);
-            }
-        }
-    }
-    SignalPattern { name: pattern.name, signals: nomalized }
-
-}
-enum SignalFormat {
-    NEC,
-    AEHA(u32, u32),
-    SONY,
-}
-
