@@ -10,10 +10,10 @@ use crate::model::{
 pub struct IrData {
     pub name: String,
     pub bits: Vec<PinLevel>,
-    freq: u32,
-    duty: f64,
-    t_micros: u32,
-    t_span: Duration,
+    pub freq: f64,
+    pub duty: f64,
+    pub t_span: Duration,
+    pub trailer_span: Duration,
     pub hz_span: Duration,
     pub hi_span: Duration,
     pub lo_span: Duration,
@@ -22,11 +22,12 @@ pub struct IrData {
 impl IrData {
     pub fn new(
         pattern: SignalPattern,
-        freq: u32,
+        freq: f64,
         duty: f64,
-        t_micros: u32
+        t_micros: u64,
+        trailer_millis: u64,
     ) -> Self {
-        let hz_span = Duration::from_secs_f64(1.0 / freq as f64);
+        let hz_span = Duration::from_secs_f64(1.0 / freq);
         let hi_span = hz_span.mul_f64(duty);
         let lo_span = hz_span - hi_span;
         let bits = Self::to_bits(&pattern.signals, t_micros);
@@ -35,15 +36,15 @@ impl IrData {
             bits,
             freq,
             duty,
-            t_micros,
             t_span: Duration::from_micros(t_micros as u64),
+            trailer_span: Duration::from_millis(trailer_millis),
             hz_span,
             hi_span,
             lo_span,
             pattern,
         }
     }
-    pub fn to_bits(pattern: &Vec<Signal>, t_micros: u32) -> Vec<PinLevel> {
+    pub fn to_bits(pattern: &Vec<Signal>, t_micros: u64) -> Vec<PinLevel> {
         let mut bits = vec![];
         for i in 0..(pattern.len() - 1) {
             let cur = &pattern[i];
@@ -61,7 +62,7 @@ impl IrData {
     pub fn play_nomalize(&self, out_pin: &mut OutputPin) {
         println!("play_nomalize");
         println!("self.bits.len() is {}", self.bits.len());
-        let mut cur = Duration::from_micros(self.t_micros as u64);
+        let mut cur = self.t_span.clone();
         let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
         let before = Instant::now();
         for level in &self.bits {
@@ -82,6 +83,7 @@ impl IrData {
             }
         }
         out_pin.set_low();
+        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
     }
     pub fn play_pwm(&self, out_pin: &mut OutputPin) {
@@ -89,7 +91,7 @@ impl IrData {
         println!("self.bits.len() is {}", self.bits.len());
         let freq = self.freq as f64;
         let duty = self.duty as f64;
-        let mut cur = Duration::from_micros(self.t_micros as u64);
+        let mut cur = self.t_span.clone();
         let before = Instant::now();
         for level in &self.bits {
             cur = cur.add(self.t_span);
@@ -113,6 +115,7 @@ impl IrData {
         if let Err(e) = out_pin.clear_pwm() {
             println!("{e}");
         };
+        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
     }
     pub fn play_origin(&self, out_pin: &mut OutputPin) {
@@ -131,6 +134,7 @@ impl IrData {
             }
         }
         out_pin.set_low();
+        Self::wait_inc(self.trailer_span);
         println!("send elepsed is {:?}", before.elapsed());
     }
     fn wait_inc(span: Duration) {
