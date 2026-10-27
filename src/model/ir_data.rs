@@ -63,9 +63,9 @@ impl IrData {
         println!("play_nomalize");
         println!("self.bits.len() is {}", self.bits.len());
         println!("hz_span is {}, hi_span is {}, lo_span is {}",
-            self.hz_span.as_micros(),
-            self.hi_span.as_micros(),
-            self.lo_span.as_micros(),
+            self.hz_span.as_nanos(),
+            self.hi_span.as_nanos(),
+            self.lo_span.as_nanos(),
         );
         let mut cur = self.t_span.clone();
         let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
