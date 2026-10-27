@@ -89,7 +89,9 @@ impl IrData {
                 PinLevel::Low => {
                     out_pin.set_low();
                     // Self::wait_inc(self.t_span);
-                    Self::wait_inc(hz);
+                    for _ in 0..t_span_count {
+                        Self::wait_inc(hz);
+                    }
                 }
             }
         }
