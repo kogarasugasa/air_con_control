@@ -67,9 +67,6 @@ impl IrData {
             self.hi_span.as_nanos(),
             self.lo_span.as_nanos(),
         );
-        let hi = Duration::from_micros(9);
-        let lo = Duration::from_micros(17);
-        let hz = Duration::from_micros(26);
         let mut cur = self.t_span.clone();
         let t_span_count = self.t_span.as_nanos() / self.hz_span.as_nanos();
         let before = Instant::now();
@@ -79,19 +76,14 @@ impl IrData {
                 PinLevel::High => {
                     for _ in 0..t_span_count {
                         out_pin.set_high();
-                        // Self::wait_inc(self.hi_span);
-                        Self::wait_inc(hi);
+                        Self::wait_inc(self.hi_span);
                         out_pin.set_low();
-                        // Self::wait_inc(self.lo_span);
-                        Self::wait_inc(lo);
+                        Self::wait_inc(self.lo_span);
                     }
                 },
                 PinLevel::Low => {
                     out_pin.set_low();
-                    // Self::wait_inc(self.t_span);
-                    for _ in 0..t_span_count {
-                        Self::wait_inc(hz);
-                    }
+                    Self::wait_inc(self.t_span);
                 }
             }
         }
@@ -131,25 +123,25 @@ impl IrData {
         println!("send elepsed is {:?}", before.elapsed());
         Self::wait_inc(self.trailer_span);
     }
-    pub fn play_origin(&self, out_pin: &mut OutputPin) {
-        println!("play_origin");
-        let before = std::time::Instant::now();
-        for sig in &self.pattern.signals {
-            match sig.level {
-                PinLevel::High => {
-                    Self::wait_abs(sig.elapsed, before);
-                    out_pin.set_high();
-                },
-                PinLevel::Low => {
-                    Self::wait_abs(sig.elapsed, before);
-                    out_pin.set_low();
-                }
-            }
-        }
-        out_pin.set_low();
-        println!("send elepsed is {:?}", before.elapsed());
-        Self::wait_inc(self.trailer_span);
-    }
+    // pub fn play_origin(&self, out_pin: &mut OutputPin) {
+    //     println!("play_origin");
+    //     let before = std::time::Instant::now();
+    //     for sig in &self.pattern.signals {
+    //         match sig.level {
+    //             PinLevel::High => {
+    //                 Self::wait_abs(sig.elapsed, before);
+    //                 out_pin.set_high();
+    //             },
+    //             PinLevel::Low => {
+    //                 Self::wait_abs(sig.elapsed, before);
+    //                 out_pin.set_low();
+    //             }
+    //         }
+    //     }
+    //     out_pin.set_low();
+    //     println!("send elepsed is {:?}", before.elapsed());
+    //     Self::wait_inc(self.trailer_span);
+    // }
     fn wait_inc(span: Duration) {
         let start = Instant::now();
         while start.elapsed() <= span {}

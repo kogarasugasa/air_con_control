@@ -18,9 +18,6 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
     thread::sleep(time::Duration::from_millis(500));
     out_pin.set_low();
     ir_data.play_pwm(&mut out_pin);
-    thread::sleep(time::Duration::from_millis(500));
-    out_pin.set_low();
-    ir_data.play_origin(&mut out_pin);
     thread::sleep(time::Duration::from_millis(130));
     out_pin.set_low();
     println!("send_pattern() end")

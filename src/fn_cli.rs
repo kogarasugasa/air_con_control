@@ -22,10 +22,3 @@ pub fn get_profile_name_from_cli() -> Option<String> {
     }
     Some(input.trim().to_string())
 }
-pub fn get_is_reverse_phase_from_cli() -> Option<bool> {
-    let mut input = String::new();
-    if let Err(_) = std::io::stdin().read_line(&mut input) {
-        return None;
-    }
-    Some(input.trim().to_lowercase().as_str() == "reverse")
-}
