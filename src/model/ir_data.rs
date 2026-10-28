@@ -91,7 +91,7 @@ impl IrData {
         println!("send elepsed is {:?}", before.elapsed());
         Self::wait_inc(self.trailer_span);
     }
-    pub fn play_pwm(&self, out_pin: &mut OutputPin) {
+    pub fn play_pwm(&self) {
         println!("play_pwm");
         println!("self.bits.len() is {}", self.bits.len());
         let freq = self.freq as f64;

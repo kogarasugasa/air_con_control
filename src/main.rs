@@ -15,7 +15,7 @@ use air_con_control::fn_cli::{
 };
 use air_con_control::fn_create_profile_path::create_profile_path;
 use air_con_control::fn_ir_tranceiver::{
-    send_pattern, receive_pattern, get_pin
+    get_pin, receive_pattern, send_pattern, send_pattern_pwm
 };
 
 fn main() {
@@ -163,7 +163,9 @@ fn ir_tranceiver(
                             return;
                         }
                     };
-                    send_pattern(get_pin(13).unwrap(), pattern);
+                    send_pattern(get_pin(13).unwrap(), pattern.clone());
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+                    send_pattern_pwm(pattern);
                 },
                 None => {
                     println!("profile not found");
