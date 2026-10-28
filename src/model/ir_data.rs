@@ -104,10 +104,12 @@ impl IrData {
                 return;
             }
         };
+        println!("Pwm::new() ok");
         if let Err(e) = pwm.set_frequency(self.freq, self.duty) {
             eprintln!("{e:?}");
             return;
         }
+        println!("set_frequency ok");
         for level in &self.bits {
             cur = cur.add(self.t_span);
             match level {
