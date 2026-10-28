@@ -94,8 +94,6 @@ impl IrData {
     pub fn play_pwm(&self) {
         println!("play_pwm");
         println!("self.bits.len() is {}", self.bits.len());
-        let freq = self.freq as f64;
-        let duty = self.duty as f64;
         let mut cur = self.t_span.clone();
         let before = Instant::now();
         let channel = rppal::pwm::Channel::Pwm1;
@@ -106,7 +104,7 @@ impl IrData {
                 return;
             }
         };
-        if let Err(e) = pwm.set_frequency(freq, duty) {
+        if let Err(e) = pwm.set_frequency(self.freq, self.duty) {
             eprintln!("{e:?}");
             return;
         }

@@ -163,8 +163,7 @@ fn ir_tranceiver(
                             return;
                         }
                     };
-                    send_pattern(get_pin(13).unwrap(), pattern.clone());
-                    std::thread::sleep(std::time::Duration::from_millis(500));
+                    //send_pattern(get_pin(13).unwrap(), pattern.clone());
                     send_pattern_pwm(pattern);
                 },
                 None => {
