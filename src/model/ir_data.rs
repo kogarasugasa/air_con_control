@@ -95,7 +95,6 @@ impl IrData {
         println!("play_pwm");
         println!("self.bits.len() is {}", self.bits.len());
         let mut cur = self.t_span.clone();
-        let before = Instant::now();
         let channel = rppal::pwm::Channel::Pwm1;
         let pwm = match rppal::pwm::Pwm::new(channel) {
             Ok(v) => v,
@@ -110,11 +109,11 @@ impl IrData {
             return;
         }
         println!("set_frequency ok");
+        let before = Instant::now();
         for level in &self.bits {
             cur = cur.add(self.t_span);
             match level {
                 PinLevel::High => {
-                    //if let Err(e) = out_pin.set_pwm_frequency(freq, duty) {
                     if let Err(e) = pwm.enable() {
                         eprintln!("{e}");
                         break;
@@ -122,7 +121,6 @@ impl IrData {
                     Self::wait_abs(cur, before);
                 },
                 PinLevel::Low => {
-                    //if let Err(e) = out_pin.clear_pwm() {
                     if let Err(e) = pwm.disable() {
                         eprintln!("{e}");
                         break;
