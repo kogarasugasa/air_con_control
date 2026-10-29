@@ -114,17 +114,21 @@ impl IrData {
             cur = cur.add(self.t_span);
             match level {
                 PinLevel::High => {
-                    if let Err(e) = pwm.enable() {
-                        eprintln!("{e}");
-                        break;
-                    };
+                    if !pwm.is_enabled().unwrap() {
+                        if let Err(e) = pwm.enable() {
+                            eprintln!("{e}");
+                            break;
+                        };
+                    }
                     Self::wait_abs(cur, before);
                 },
                 PinLevel::Low => {
-                    if let Err(e) = pwm.disable() {
-                        eprintln!("{e}");
-                        break;
-                    };
+                    if pwm.is_enabled().unwrap() {
+                        if let Err(e) = pwm.disable() {
+                            eprintln!("{e}");
+                            break;
+                        };
+                    }
                     Self::wait_abs(cur, before);
                 }
             }
