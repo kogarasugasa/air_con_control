@@ -108,6 +108,7 @@ impl IrData {
             eprintln!("{e:?}");
             return;
         }
+        std::thread::sleep(std::time::Duration::from_millis(500));
         println!("set_frequency ok");
         let before = Instant::now();
         for level in &self.bits {
@@ -115,19 +116,13 @@ impl IrData {
             match level {
                 PinLevel::High => {
                     if !pwm.is_enabled().unwrap() {
-                        if let Err(e) = pwm.enable() {
-                            eprintln!("{e}");
-                            break;
-                        };
+                        pwm.enable().unwrap();
                     }
                     Self::wait_abs(cur, before);
                 },
                 PinLevel::Low => {
                     if pwm.is_enabled().unwrap() {
-                        if let Err(e) = pwm.disable() {
-                            eprintln!("{e}");
-                            break;
-                        };
+                        pwm.disable().unwrap();
                     }
                     Self::wait_abs(cur, before);
                 }
