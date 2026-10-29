@@ -129,7 +129,6 @@ impl IrData {
                 }
             }
         }
-        //if let Err(e) = out_pin.clear_pwm() {
         if let Err(e) = pwm.disable() {
             eprintln!("{e:?}");
         };

@@ -22,7 +22,7 @@ pub fn send_pattern(pin: gpio::Pin, pattern: SignalPattern) {
 pub fn send_pattern_pwm(pattern: SignalPattern) {
     let freq = 38000.0; // 38kHz
     let duty = 1.0 / 3.0;
-    let t_micros = 420;
+    let t_micros = 425;
     let trailer_millis = 8;
     let ir_data = IrData::new(pattern, freq, duty, t_micros, trailer_millis);
     ir_data.play_pwm();
