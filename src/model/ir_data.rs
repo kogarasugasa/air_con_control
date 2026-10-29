@@ -95,7 +95,7 @@ impl IrData {
         println!("play_pwm");
         println!("self.bits.len() is {}", self.bits.len());
         let mut cur = self.t_span.clone();
-        let channel = rppal::pwm::Channel::Pwm1;
+        let channel = rppal::pwm::Channel::Pwm0;
         let pwm = match rppal::pwm::Pwm::new(channel) {
             Ok(v) => v,
             Err(e) => {
